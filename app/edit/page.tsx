@@ -455,6 +455,20 @@ export default function EditPage() {
                           }
                         />
                       </label>
+                      <label className="edit-field">
+                        דק׳ מהקודמת
+                        <input
+                          type="number"
+                          min={0}
+                          value={a.legMin ?? ""}
+                          onChange={(e) =>
+                            updateAttraction(key, ai, (x) => ({
+                              ...x,
+                              legMin: e.target.value === "" ? undefined : Number(e.target.value),
+                            }))
+                          }
+                        />
+                      </label>
                       <label className="edit-field" style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                         <input
                           type="checkbox"

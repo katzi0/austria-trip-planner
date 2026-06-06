@@ -18,6 +18,7 @@ export const AttractionSchema = z.object({
   tips: z.string().optional(),      // important tips
   card: z.boolean().optional(),     // included in the area summer card
   parking: z.string().optional(),   // where to park nearby
+  legMin: z.number().optional(),    // driving minutes from previous attraction in this list
 });
 
 export const RegionSchema = z.object({

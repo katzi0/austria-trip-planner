@@ -242,6 +242,11 @@ export default function DetailPanel({
                 <div className="attr" key={i}>
                   <div className="attr-top">
                     <span className="attr-name">{a.name}</span>
+                    {typeof a.legMin === "number" && (
+                      <span className="pnl-step-pin" title="זמן נסיעה מהאטרקציה הקודמת">
+                        <Icon name="car" size={11} /> {a.legMin} דק׳
+                      </span>
+                    )}
                     {a.card && <span className="attr-card">כלול בכרטיס הקיץ</span>}
                   </div>
                   {a.desc && <p className="attr-desc">{a.desc}</p>}

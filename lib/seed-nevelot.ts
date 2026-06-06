@@ -12,6 +12,12 @@ export const NEVELOT_TRIP: TripInput = {
       lat: 47.574,
       lng: 12.706,
       icon: "peak",
+      attractions: [
+        { name: "רכבל Loferer Alm", desc: "תצפיות מדהימות על האלפים מתחנת הפסגה." },
+        { name: "מסלולי הליכה בעמק Saalach", desc: "טיולים רגליים בעמק הירוק. האזור כשעה נסיעה מצלזבורג העיר.", legMin: 10 },
+        { name: "קיאקים / Rafting בנהר", desc: "פעילות מים בנהר ה-Saalach.", legMin: 10 },
+        { name: "Seisenbergklamm (נקיק)", desc: "קניון יפה במיוחד עם גשרים ומסלול הליכה.", legMin: 15 },
+      ],
     },
     zugspitz: {
       name: "ארוואלד · Zugspitz",
@@ -22,6 +28,13 @@ export const NEVELOT_TRIP: TripInput = {
       lat: 47.426,
       lng: 10.942,
       icon: "cablecar",
+      attractions: [
+        { name: "רכבל Zugspitze (פסגה 2962 מ׳)", desc: "רכבל לפסגה הגבוהה של גרמניה." },
+        { name: "אגם Eibsee", desc: "אגם טורקיז למרגלות הצוגשפיצה — מהיפים באלפים.", legMin: 25 },
+        { name: "Seebensee hike", desc: "טיול קלאסי לאגם הררי, ~4–5 שעות הליכה.", legMin: 20 },
+        { name: "Fernpass scenic road", desc: "כביש נופי דרך מעבר ההר ההיסטורי.", legMin: 10 },
+        { name: "מסלולי MTB", desc: "מסלולי אופני הרים סביב Ehrwald.", legMin: 5 },
+      ],
     },
     solden: {
       name: "זלדן · Ötztal",
@@ -32,6 +45,13 @@ export const NEVELOT_TRIP: TripInput = {
       lat: 46.968,
       lng: 11.007,
       icon: "cablecar",
+      attractions: [
+        { name: "Gaislachkogelbahn", desc: "רכבל ל-3,040 מ׳ עם מרכז 007 Elements בפסגה." },
+        { name: "Bike Republic Sölden", desc: "פארק אופני הרים מהמובילים בעולם.", legMin: 5 },
+        { name: "Ötztal Glacier Road", desc: "כביש קרחון הררי — נהיגה מטורפת לשיא 2,829 מ׳.", legMin: 15 },
+        { name: "Aqua Dome", desc: "ספא תרמי גדול ב-Längenfeld.", legMin: 25 },
+        { name: "Top Mountain Motorcycle Museum", desc: "מוזיאון אופנועים בגובה 2,175 מ׳ על כביש הקרחון.", legMin: 40 },
+      ],
     },
     mondsee: {
       name: "מונדזee · MondSeeLand",
@@ -42,6 +62,12 @@ export const NEVELOT_TRIP: TripInput = {
       lat: 47.858,
       lng: 13.351,
       icon: "lake",
+      attractions: [
+        { name: "שחייה וספורט מים באגם", desc: "אגם Mondsee — שחייה ופעילויות מים ישירות מהקמפינג." },
+        { name: "Paddle / SUP", desc: "השכרת SUP על המתקנים בקמפינג.", legMin: 0 },
+        { name: "עיירת Mondsee", desc: "עיירה ציורית עם הכנסייה מ-The Sound of Music. כ-30 דק׳ נסיעה מצלזבורג.", legMin: 5 },
+        { name: "כביש נופי סביב האגמים", desc: "מסלול נסיעה דרך אגמי Salzkammergut.", legMin: 10 },
+      ],
     },
     vienna: {
       name: "וינה · סיום",
@@ -52,6 +78,12 @@ export const NEVELOT_TRIP: TripInput = {
       lat: 48.208,
       lng: 16.372,
       icon: "palace",
+      attractions: [
+        { name: "Hofburg Palace", desc: "ארמון הקיסרים ההיסטורי במרכז וינה." },
+        { name: "Figlmüller", desc: "מסעדת השניצל המפורסמת בעיר.", legMin: 5 },
+        { name: "Brewing Company 1516", desc: "פאב מבשלה בלב העיר.", legMin: 10 },
+        { name: "Café Central", desc: "בית קפה ויאני קלאסי. הדירה ~חצי שעה באובר משדה התעופה.", legMin: 5 },
+      ],
     },
   },
   days: [
