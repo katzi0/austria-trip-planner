@@ -23,6 +23,20 @@ export function tripToEditorHtml(
   const nameJson = JSON.stringify(downloadName);
   const apiJson = JSON.stringify(apiBase);
   const slugJson = JSON.stringify(slug);
+  const aiPrompt = [
+    "מטרה: למלא את הקואורדינטות (lat, lng) בקובץ ה-JSON של הטיול המצורף למטה.",
+    "",
+    "כללים:",
+    "1. מלאו lat ו-lng רק עבור אזורים (regions) וימים (days) שבהם הערך הוא 0 או חסר.",
+    "2. גזרו את הקואורדינטות מהשדות שכבר מולאו: לאזור — name / town / hotel; ליום — title והאזור (base) שלו.",
+    "3. קואורדינטות עשרוניות (WGS84). הטיול באלפים של אוסטריה/בוואריה — בערך lat 46–49, lng 9–17. אם ערך יוצא מהטווח, ציינו זאת לבדיקה.",
+    "4. אל תשנו אף שדה אחר, ואל תיגעו בקואורדינטות שכבר שונות מ-0.",
+    "5. לאטרקציות (attractions) אין קואורדינטות — אל תוסיפו.",
+    "6. החזירו אך ורק את אובייקט ה-JSON המלא והתקין, ללא טקסט לפני או אחרי.",
+    "",
+    "קובץ הטיול:",
+  ].join("\n");
+  const aiPromptJson = JSON.stringify(aiPrompt);
 
   return `<!doctype html>
 <html lang="he" dir="rtl">
@@ -69,6 +83,14 @@ export function tripToEditorHtml(
   .save-pass { width:130px; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.55);
     background:rgba(255,255,255,.15); color:#fff; font:inherit; font-size:13px; }
   .save-pass::placeholder { color:rgba(255,255,255,.75); }
+  .ai-box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 14px; margin-bottom:14px; }
+  .ai-box > summary { cursor:pointer; font-weight:700; font-size:15px; color:var(--accent); padding:6px 0; }
+  .ai-box .step { font-size:13px; color:#5a554c; margin:8px 0; line-height:1.6; }
+  .ai-box textarea { width:100%; min-height:90px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+    border:1px solid var(--line); border-radius:8px; padding:9px; resize:vertical; background:#fbfaf6; }
+  .ai-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0; }
+  .ai-sep { border:none; border-top:1px dashed var(--line); margin:14px 0; }
+  .lbl { font-size:12px; color:#5a554c; font-weight:700; }
 </style>
 </head>
 <body>
@@ -81,7 +103,30 @@ export function tripToEditorHtml(
   <button class="btn" id="download">⬇ הורד JSON</button>
 </header>
 <div class="wrap">
-  <p class="note">ערכו את השדות. <b>לשמירה ישירה לאתר:</b> הזינו סיסמה ולחצו "שמור לאתר" (דורש אינטרנט). <b>ללא אינטרנט:</b> לחצו "הורד JSON" ושלחו את הקובץ — הוא נטען דרך כפתור ההעלאה באתר.</p>
+  <p class="note">מלאו את כל השדות. את הקואורדינטות (קו רוחב/אורך) אפשר להשאיר על 0 — ה-AI ימלא אותן. <b>שמירה לאתר:</b> סיסמה + "שמור לאתר". <b>ללא אינטרנט:</b> "הורד JSON" והעלו אותו באתר.</p>
+
+  <details class="ai-box">
+    <summary>🤖 מילוי קואורדינטות עם AI</summary>
+    <div class="step">
+      מלאו את כל הפרטים חוץ מהקואורדינטות, ואז:
+      <br>1. לחצו <b>"הכן בקשה ל-AI"</b> והעתיקו את הטקסט.
+      <br>2. הדביקו אותו בכלי ה-AI שלכם (ChatGPT / Claude / וכו') ושלחו.
+      <br>3. הדביקו כאן את ה-JSON שחזר ולחצו <b>"טען תשובה"</b>.
+      <br>4. בדקו, ואז שמרו לאתר.
+    </div>
+    <div class="ai-row">
+      <button class="btn add-inline" id="ai-request">📋 הכן בקשה ל-AI</button>
+      <span class="lbl" id="ai-req-status"></span>
+    </div>
+    <textarea id="ai-out" readonly placeholder="הבקשה ל-AI תופיע כאן — העתיקו אותה"></textarea>
+    <hr class="ai-sep">
+    <div class="lbl">הדביקו כאן את תשובת ה-AI (JSON):</div>
+    <textarea id="ai-in" placeholder='{ "baseOrder": [...], "regions": {...}, "days": [...] }'></textarea>
+    <div class="ai-row">
+      <button class="btn add-inline" id="ai-load">⬇ טען תשובה לטופס</button>
+      <span class="lbl" id="ai-in-status"></span>
+    </div>
+  </details>
 
   <h2>בסיסים (מלונות/אזורים)</h2>
   <div id="bases"></div>
@@ -99,6 +144,7 @@ const CARD_CLASSES = ${cardsJson};
 const DOWNLOAD_NAME = ${nameJson};
 const API_BASE = ${apiJson};
 const SLUG = ${slugJson};
+const AI_PROMPT = ${aiPromptJson};
 
 function el(tag, attrs={}, children=[]) {
   const n = document.createElement(tag);
@@ -174,8 +220,8 @@ function renderBase(key, r) {
     field("מלון", input("hotel", r.hotel)),
     field("עיר", input("town", r.town || "")),
     field("צבע", input("hex", r.hex, "color")),
-    field("קו רוחב", input("lat", r.lat, "number")),
-    field("קו אורך", input("lng", r.lng, "number")),
+    field("קו רוחב (AI ימלא)", input("lat", r.lat, "number")),
+    field("קו אורך (AI ימלא)", input("lng", r.lng, "number")),
     field("אייקון", selectFrom("icon", r.icon, ICONS)),
   ]);
 
@@ -212,8 +258,8 @@ function renderDay(d) {
     field("צבע", input("color", d.color, "color")),
     field("עומס (1-5)", input("intensity", d.intensity, "number")),
     field("אייקון", selectFrom("icon", d.icon, ICONS)),
-    field("קו רוחב", input("lat", d.lat, "number")),
-    field("קו אורך", input("lng", d.lng, "number")),
+    field("קו רוחב (AI ימלא)", input("lat", d.lat, "number")),
+    field("קו אורך (AI ימלא)", input("lng", d.lng, "number")),
     field("כותרת", input("title", d.title), { full:true }),
     field("פעילויות (שורה לכל פעילות)", textarea("acts", (d.acts||[]).join("\\n")), { full:true }),
     field("נסיעה", input("drive", d.drive)),
@@ -245,9 +291,14 @@ function refreshDayBaseSelects() {
 
 // Initial render
 const basesEl = document.getElementById("bases");
-for (const k of DATA.baseOrder) basesEl.appendChild(renderBase(k, DATA.regions[k]));
 const daysEl = document.getElementById("days");
-for (const d of DATA.days) daysEl.appendChild(renderDay(d));
+function loadData(data) {
+  basesEl.innerHTML = "";
+  daysEl.innerHTML = "";
+  for (const k of data.baseOrder) basesEl.appendChild(renderBase(k, data.regions[k]));
+  for (const dd of data.days) daysEl.appendChild(renderDay(dd));
+}
+loadData(DATA);
 
 document.getElementById("add-base").onclick = () => {
   const key = prompt("מפתח לבסיס החדש (אנגלית, ללא רווחים):", "base" + (baseKeys().length + 1));
@@ -359,6 +410,39 @@ saveBtn.onclick = async () => {
   } finally {
     saveBtn.disabled = false;
   }
+};
+
+// AI coordinate-fill: build a ready prompt, and load the AI's JSON answer back.
+document.getElementById("ai-request").onclick = () => {
+  const out = document.getElementById("ai-out");
+  out.value = AI_PROMPT + "\\n\\n" + JSON.stringify(collect(), null, 2);
+  out.focus(); out.select();
+  const st = document.getElementById("ai-req-status");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(out.value)
+      .then(() => { st.textContent = "הועתק ✓ — הדביקו בכלי ה-AI"; })
+      .catch(() => { st.textContent = "בחרו והעתיקו ידנית (Ctrl+C)"; });
+  } else {
+    try { document.execCommand("copy"); st.textContent = "הועתק ✓"; }
+    catch (e) { st.textContent = "בחרו והעתיקו ידנית (Ctrl+C)"; }
+  }
+  setTimeout(() => { st.textContent = ""; }, 6000);
+};
+
+document.getElementById("ai-load").onclick = () => {
+  const st = document.getElementById("ai-in-status");
+  const raw = document.getElementById("ai-in").value || "";
+  const a = raw.indexOf("{"), b = raw.lastIndexOf("}");
+  if (a < 0 || b <= a) { st.textContent = "לא נמצא JSON בתשובה"; return; }
+  let data;
+  try { data = JSON.parse(raw.slice(a, b + 1)); }
+  catch (err) { st.textContent = "JSON לא תקין: " + err.message; return; }
+  if (!data || !Array.isArray(data.baseOrder) || !data.regions || !Array.isArray(data.days)) {
+    st.textContent = "המבנה אינו טיול תקין (חסר baseOrder/regions/days)"; return;
+  }
+  loadData(data);
+  st.textContent = "נטען ✓ — בדקו את הקואורדינטות ושמרו לאתר";
+  setTimeout(() => { st.textContent = ""; }, 7000);
 };
 </script>
 </body>
