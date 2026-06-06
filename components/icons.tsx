@@ -21,6 +21,7 @@ export const ICON_PATHS: Record<string, string> = {
   rain: '<path d="M7 16a4 4 0 0 1-1-7.9 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 18 16"/><path d="m8 19-1 2M12 19l-1 2M16 19l-1 2"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   star: '<path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
+  timeline: '<circle cx="6" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><path d="M11 6h10M11 12h10M11 18h10"/>',
 };
 
 export function iconSvg(name: string, size = 18): string {

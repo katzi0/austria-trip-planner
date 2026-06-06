@@ -7,6 +7,7 @@ import Map from "./Map";
 import Ribbon from "./Ribbon";
 import DayStrip from "./DayStrip";
 import DetailPanel from "./DetailPanel";
+import TimelinePanel from "./TimelinePanel";
 import PrintView from "./PrintView";
 
 type ViewMode = "area" | "day";
@@ -48,6 +49,7 @@ export default function TripView({ trip }: TripViewProps) {
   const [currentRegion, setCurrentRegion] = useState<string>("all");
   const [activeIdx, setActiveIdx] = useState<number>(-1);
   const [panelOpen, setPanelOpen] = useState<boolean>(false);
+  const [timelineOpen, setTimelineOpen] = useState<boolean>(false);
   const [typeMenuOpen, setTypeMenuOpen] = useState<boolean>(false);
   const [ribbonOpen, setRibbonOpen] = useState<boolean>(false);
   const [curPairing, setCurPairing] = useState<Pairing>("alpine");
@@ -204,6 +206,22 @@ export default function TripView({ trip }: TripViewProps) {
     window.print();
   }, []);
 
+  const onTimelineClick = useCallback(() => {
+    setTimelineOpen((v) => !v);
+  }, []);
+
+  const closeTimeline = useCallback(() => {
+    setTimelineOpen(false);
+  }, []);
+
+  const onTimelineDayClick = useCallback(
+    (i: number) => {
+      focusDay(i);
+      setPanelOpen(true);
+    },
+    [focusDay]
+  );
+
   // Toggle handlers (DayStrip)
   const onToggleArea = useCallback(() => {
     setAreaMode();
@@ -315,6 +333,7 @@ export default function TripView({ trip }: TripViewProps) {
           onOverviewClick={onOverviewClick}
           onTypeOpen={onTypeOpen}
           onPrintClick={onPrintClick}
+          onTimelineClick={onTimelineClick}
           todayLabel={todayLabel}
           todayPulse={todayPulse}
           typeMenuChildren={typeMenu}
@@ -345,6 +364,13 @@ export default function TripView({ trip }: TripViewProps) {
         activeIdx={activeIdx}
         open={panelOpen}
         onClose={closePanel}
+      />
+      <TimelinePanel
+        trip={trip}
+        open={timelineOpen}
+        activeIdx={activeIdx}
+        onClose={closeTimeline}
+        onDayClick={onTimelineDayClick}
       />
       <PrintView trip={trip} />
     </div>

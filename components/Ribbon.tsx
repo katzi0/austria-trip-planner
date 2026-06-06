@@ -18,6 +18,7 @@ export interface RibbonProps {
   onOverviewClick: () => void;
   onTypeOpen: () => void;
   onPrintClick: () => void;
+  onTimelineClick: () => void;
   todayLabel: string;
   todayPulse?: boolean;
   typeMenuChildren?: ReactNode;
@@ -36,6 +37,7 @@ export default function Ribbon({
   onOverviewClick,
   onTypeOpen,
   onPrintClick,
+  onTimelineClick,
   todayLabel,
   todayPulse = true,
   typeMenuChildren,
@@ -187,6 +189,14 @@ export default function Ribbon({
           </button>
           {typeMenuChildren}
         </div>
+        <button
+          className="iconbtn"
+          onClick={onTimelineClick}
+          aria-label="ציר זמן"
+          title="ציר זמן"
+        >
+          <Icon name="timeline" size={17} />
+        </button>
         <button
           className="iconbtn"
           onClick={onPrintClick}
