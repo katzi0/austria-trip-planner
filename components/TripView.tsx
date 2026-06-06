@@ -9,9 +9,12 @@ import Map from "./Map";
 import Ribbon from "./Ribbon";
 import DayStrip from "./DayStrip";
 import DetailPanel from "./DetailPanel";
+import TimelineList from "./TimelineList";
 import TimelinePanel from "./TimelinePanel";
 import PrintView from "./PrintView";
 import UploadDialog from "./UploadDialog";
+
+type PhoneView = "map" | "list";
 
 type ViewMode = "area" | "day";
 type Pairing = "alpine" | "booking" | "journal";
@@ -380,6 +383,25 @@ export default function TripView({
           onHotelClick={onHotelClick}
           onMiniPopupClick={onMiniPopupClick}
         />
+        {isPhone && tripList.length > 1 && (
+          <div
+            className="trip-switch trip-switch-float"
+            role="tablist"
+            aria-label="בחירת טיול"
+          >
+            {tripList.map((t) => (
+              <button
+                key={t.slug}
+                role="tab"
+                aria-selected={t.slug === activeSlug}
+                className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
+                onClick={() => onSwitchTrip(t.slug)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <DayStrip
         trip={trip}
@@ -391,9 +413,6 @@ export default function TripView({
         onNext={() => step(1)}
         onToggleArea={onToggleArea}
         onToggleDay={onToggleDay}
-        tripList={tripList}
-        activeSlug={activeSlug}
-        onSwitchTrip={onSwitchTrip}
       />
       <DetailPanel
         trip={trip}

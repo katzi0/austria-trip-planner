@@ -1,6 +1,6 @@
-import type { Trip } from "./trip-schema";
+import type { TripInput } from "./trip-schema";
 
-export const NEVELOT_TRIP: Trip = {
+export const NEVELOT_TRIP: TripInput = {
   baseOrder: ["grubhof", "zugspitz", "solden", "mondsee", "vienna"],
   regions: {
     grubhof: {

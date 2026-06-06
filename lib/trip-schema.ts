@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+export const ActivitySchema = z.object({
+  name: z.string(),
+  lat: z.number().optional(),   // filled by the AI coordinate step; optional
+  lng: z.number().optional(),
+});
+
+// Accept legacy plain-string bullets too, normalizing them to { name }.
+const ActItem = z
+  .union([z.string(), ActivitySchema])
+  .transform((v) => (typeof v === "string" ? { name: v } : v));
+
 export const AttractionSchema = z.object({
   name: z.string(),
   desc: z.string().optional(),      // description → shown in the detail panel
@@ -31,7 +42,7 @@ export const DaySchema = z.object({
   lat: z.number(),
   lng: z.number(),
   title: z.string(),
-  acts: z.array(z.string()),
+  acts: z.array(ActItem),
   drive: z.string(),
   cardLabel: z.string(),
   cardClass: z.enum(["free", "discount", "none", "na"]),
@@ -49,10 +60,14 @@ export const TripSchema = z.object({
   days: z.array(DaySchema),
 });
 
+export type Activity = z.infer<typeof ActivitySchema>;
 export type Attraction = z.infer<typeof AttractionSchema>;
 export type Region = z.infer<typeof RegionSchema>;
 export type Day = z.infer<typeof DaySchema>;
 export type Trip = z.infer<typeof TripSchema>;
+// Input shape (pre-transform): `acts` items may be plain strings. Seed constants use
+// this so legacy string bullets remain valid literals; reads normalize to objects.
+export type TripInput = z.input<typeof TripSchema>;
 
 export const BUSY: Record<number, string> = {
   1: "רגוע",

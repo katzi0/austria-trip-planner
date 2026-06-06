@@ -27,8 +27,8 @@ export function tripToEditorHtml(
     "מטרה: למלא את הקואורדינטות (lat, lng) בקובץ ה-JSON של הטיול המצורף למטה.",
     "",
     "כללים:",
-    "1. מלאו lat ו-lng רק עבור אזורים (regions) וימים (days) שבהם הערך הוא 0 או חסר.",
-    "2. גזרו את הקואורדינטות מהשדות שכבר מולאו: לאזור — name / town / hotel; ליום — title והאזור (base) שלו.",
+    "1. מלאו lat ו-lng עבור אזורים (regions), ימים (days), וכל פעילות בתוך days[].acts — רק היכן שהערך 0 או חסר.",
+    "2. גזרו את הקואורדינטות מהשדות שכבר מולאו: לאזור — name/town/hotel; ליום — title והאזור (base); לפעילות — שם הפעילות (acts[].name) והעיר/אזור של היום.",
     "3. קואורדינטות עשרוניות (WGS84). הטיול באלפים של אוסטריה/בוואריה — בערך lat 46–49, lng 9–17. אם ערך יוצא מהטווח, ציינו זאת לבדיקה.",
     "4. אל תשנו אף שדה אחר, ואל תיגעו בקואורדינטות שכבר שונות מ-0.",
     "5. לאטרקציות (attractions) אין קואורדינטות — אל תוסיפו.",
@@ -241,6 +241,24 @@ function renderBase(key, r) {
   return card;
 }
 
+function renderActivity(a) {
+  if (typeof a === "string") a = { name:a, lat:0, lng:0 };
+  a = a || { name:"", lat:0, lng:0 };
+  const item = el("div", { class:"attr-item" }); item.dataset.actCard = "1";
+  const head = el("div", { class:"card-head" }, [
+    el("b", { text:"פעילות" }),
+    el("button", { class:"btn del", text:"מחק" }),
+  ]);
+  head.querySelector("button").onclick = () => item.remove();
+  const grid = el("div", { class:"grid" }, [
+    field("שם הפעילות", input("name", a.name), { full:true }),
+    field("קו רוחב (AI ימלא)", input("lat", a.lat ?? 0, "number")),
+    field("קו אורך (AI ימלא)", input("lng", a.lng ?? 0, "number")),
+  ]);
+  item.appendChild(head); item.appendChild(grid);
+  return item;
+}
+
 function renderDay(d) {
   d = d || { n:0, d:"", dow:"", base:baseKeys()[0]||"", color:"#1C7A52", intensity:3, icon:"bed",
     lat:0, lng:0, title:"", acts:[], drive:"", cardLabel:"", cardClass:"na", food:"", rain:"", tips:"" };
@@ -261,7 +279,6 @@ function renderDay(d) {
     field("קו רוחב (AI ימלא)", input("lat", d.lat, "number")),
     field("קו אורך (AI ימלא)", input("lng", d.lng, "number")),
     field("כותרת", input("title", d.title), { full:true }),
-    field("פעילויות (שורה לכל פעילות)", textarea("acts", (d.acts||[]).join("\\n")), { full:true }),
     field("נסיעה", input("drive", d.drive)),
     field("תווית כרטיס", input("cardLabel", d.cardLabel)),
     field("סוג כרטיס", selectFrom("cardClass", d.cardClass, CARD_CLASSES)),
@@ -272,6 +289,19 @@ function renderDay(d) {
     field("כוכב (יום מיוחד)", checkbox("star", d.star), { row:true }),
     field("חריג", checkbox("outlier", d.outlier), { row:true }),
   ]);
+
+  // Day activities (nested → mapped on the day's pin sequence)
+  const actBlock = el("div", { class:"attr-block" });
+  const actList = el("div", {}); actList.dataset.actList = "1";
+  for (const a of (d.acts || [])) actList.appendChild(renderActivity(a));
+  const addAct = el("button", { class:"btn add-sm", text:"+ הוסף פעילות" });
+  addAct.onclick = () => actList.appendChild(renderActivity(null));
+  actBlock.appendChild(el("div", { class:"attr-lbl" }, [
+    el("span", { text:"פעילויות (יסומנו על המפה)" }), addAct,
+  ]));
+  actBlock.appendChild(actList);
+  grid.appendChild(actBlock);
+
   card.appendChild(head); card.appendChild(grid);
   return card;
 }
@@ -354,11 +384,25 @@ function collect() {
   });
   const days = [];
   document.querySelectorAll("[data-day-card]").forEach(card => {
-    const r = readCard(card);
+    // Day's own fields — skip those inside nested activity cards.
+    const r = {};
+    card.querySelectorAll("[data-f]").forEach(elm => {
+      if (elm.closest("[data-act-card]")) return;
+      setVal(r, elm);
+    });
+    // Day activities (each keeps lat/lng — 0 until the AI fills them).
+    const acts = [];
+    card.querySelectorAll("[data-act-card]").forEach(ac => {
+      const a = {};
+      ac.querySelectorAll("[data-f]").forEach(elm => setVal(a, elm));
+      const name = (a.name || "").trim();
+      if (!name) return;
+      acts.push({ name, lat: Number(a.lat) || 0, lng: Number(a.lng) || 0 });
+    });
     const day = { n:Number(r.n)||0, d:String(r.d||""), dow:r.dow||"", base:r.base||"",
       color:r.color||"#000000", intensity:Number(r.intensity)||1, icon:r.icon||"bed",
       lat:Number(r.lat)||0, lng:Number(r.lng)||0, title:r.title||"",
-      acts:String(r.acts||"").split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean),
+      acts,
       drive:r.drive||"", cardLabel:r.cardLabel||"", cardClass:r.cardClass||"na",
       food:r.food||"", rain:r.rain||"", tips:r.tips||"" };
     if (r.star) day.star = true;

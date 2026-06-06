@@ -84,7 +84,7 @@ export default function Ribbon({
       const region = trip.regions[d.base];
       const fields: string[] = [
         d.title,
-        ...d.acts,
+        ...d.acts.map((a) => a.name),
         d.food,
         d.tips,
         d.rain,

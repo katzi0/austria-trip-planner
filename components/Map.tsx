@@ -111,6 +111,22 @@ function makeHotelElement(
   return wrap;
 }
 
+function makeActPinElement(color: string, num: number, label: string): HTMLDivElement {
+  const wrap = document.createElement("div");
+  wrap.className = "actpinwrap";
+  wrap.title = label;
+  wrap.innerHTML = `<div class="actpin" style="background:${color}">${num}</div>`;
+  return wrap;
+}
+
+// An activity is mappable only when it has real coordinates (not the 0,0 default).
+function actLngLat(a: { lat?: number; lng?: number }): LngLat | null {
+  if (typeof a.lat === "number" && typeof a.lng === "number" && (a.lat !== 0 || a.lng !== 0)) {
+    return [a.lng, a.lat];
+  }
+  return null;
+}
+
 export default function Map(props: MapProps): React.JSX.Element {
   const { trip, viewMode, dayScope, activeIdx, onDayPinClick, onHotelClick, onMiniPopupClick } = props;
 
@@ -122,6 +138,7 @@ export default function Map(props: MapProps): React.JSX.Element {
   const readyRef = useRef(false);
   const dayMarkersRef = useRef<maplibregl.Marker[]>([]);
   const hotelMarkersRef = useRef<Record<string, maplibregl.Marker>>({});
+  const actMarkersRef = useRef<maplibregl.Marker[]>([]);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const rafRef = useRef<number | null>(null);
   const resizeObsRef = useRef<ResizeObserver | null>(null);
@@ -235,6 +252,8 @@ export default function Map(props: MapProps): React.JSX.Element {
       }
       dayMarkersRef.current.forEach((m) => m.remove());
       dayMarkersRef.current = [];
+      actMarkersRef.current.forEach((m) => m.remove());
+      actMarkersRef.current = [];
       Object.values(hotelMarkersRef.current).forEach((m) => m.remove());
       hotelMarkersRef.current = {};
       readyRef.current = false;
@@ -298,11 +317,38 @@ export default function Map(props: MapProps): React.JSX.Element {
 
   function forceUpdate() {
     applyPinStates();
+    applyActivityPins();
     applyBaseRoutes();
     applyDayRoute();
     applyCamera();
     applyMiniPopup();
     applyLabel();
+  }
+
+  // Per-activity numbered pins for the focused day (rebuilt each render).
+  function applyActivityPins() {
+    const map = mapRef.current;
+    if (!map) return;
+    actMarkersRef.current.forEach((m) => m.remove());
+    actMarkersRef.current = [];
+    if (viewMode !== "day" || activeIdx < 0) return;
+    const day = trip.days[activeIdx];
+    if (!day) return;
+    let num = 0;
+    day.acts.forEach((a) => {
+      const ll = actLngLat(a);
+      if (!ll) return;
+      num += 1;
+      const el = makeActPinElement(day.color, num, a.name);
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        cbRef.current.onMiniPopupClick(activeIdx);
+      });
+      const marker = new maplibregl.Marker({ element: el, anchor: "center" })
+        .setLngLat(ll)
+        .addTo(map);
+      actMarkersRef.current.push(marker);
+    });
   }
 
   function applyPinStates() {
@@ -402,6 +448,22 @@ export default function Map(props: MapProps): React.JSX.Element {
       src.setData(emptyLineFC());
       return;
     }
+    // If the day has mapped activities, draw a static path through them (the day's
+    // order), starting at the day pin. Otherwise animate the region→day segment.
+    const actCoords = day.acts.map(actLngLat).filter((c): c is LngLat => c !== null);
+    if (actCoords.length) {
+      src.setData({
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: { color: day.color },
+            geometry: { type: "LineString", coordinates: [[day.lng, day.lat], ...actCoords] },
+          },
+        ],
+      });
+      return;
+    }
     const a: LngLat = [r.lng, r.lat];
     const z: LngLat = [day.lng, day.lat];
     const D = 620;
@@ -458,6 +520,11 @@ export default function Map(props: MapProps): React.JSX.Element {
       const pts: LngLat[] = [[r.lng, r.lat]];
       trip.days.forEach((d) => {
         if (d.base === baseKey && !d.outlier) pts.push([d.lng, d.lat]);
+      });
+      // Frame the focused day's mapped activities too.
+      day.acts.forEach((a) => {
+        const ll = actLngLat(a);
+        if (ll) pts.push(ll);
       });
       map.fitBounds(boundsOf(pts), {
         padding: { top: Math.max(pad, 170), right: pad, bottom: pad, left: pad },

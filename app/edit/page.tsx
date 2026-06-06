@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Trip, Day, Region, Attraction } from "@/lib/trip-schema";
+import type { Trip, Day, Region, Attraction, Activity } from "@/lib/trip-schema";
 import { TRIPS, DEFAULT_SLUG, isKnownSlug } from "@/lib/trips";
 import { tripToEditorHtml } from "@/lib/trip-html-editor";
 
@@ -165,6 +165,27 @@ export default function EditPage() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }
+
+  function addActivity(idx: number) {
+    updateDay(idx, (d) => ({ ...d, acts: [...d.acts, { name: "" } as Activity] }));
+  }
+
+  function updateActivity(idx: number, ai: number, mut: (a: Activity) => Activity) {
+    updateDay(idx, (d) => {
+      const list = [...d.acts];
+      if (!list[ai]) return d;
+      list[ai] = mut(list[ai]);
+      return { ...d, acts: list };
+    });
+  }
+
+  function deleteActivity(idx: number, ai: number) {
+    updateDay(idx, (d) => {
+      const list = [...d.acts];
+      list.splice(ai, 1);
+      return { ...d, acts: list };
+    });
   }
 
   function addDay() {
@@ -555,18 +576,47 @@ export default function EditPage() {
                   onChange={(e) => updateDay(idx, (x) => ({ ...x, title: e.target.value }))}
                 />
               </label>
-              <label className="edit-field" style={{ gridColumn: "1 / -1" }}>
-                פעילויות (שורה לכל פעילות)
-                <textarea
-                  value={d.acts.join("\n")}
-                  onChange={(e) =>
-                    updateDay(idx, (x) => ({
-                      ...x,
-                      acts: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
-                    }))
-                  }
-                />
-              </label>
+              <div className="edit-field" style={{ gridColumn: "1 / -1" }}>
+                <div className="edit-row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+                  <span>פעילויות (מסומנות על המפה לפי קואורדינטות)</span>
+                  <button className="edit-btn secondary" onClick={() => addActivity(idx)}>+ הוסף פעילות</button>
+                </div>
+                {d.acts.map((a, ai) => (
+                  <div
+                    className="edit-row"
+                    key={ai}
+                    style={{ gap: 6, marginBottom: 6, alignItems: "flex-end" }}
+                  >
+                    <label className="edit-field" style={{ flex: 1 }}>
+                      פעילות {ai + 1}
+                      <input
+                        type="text"
+                        value={a.name}
+                        onChange={(e) => updateActivity(idx, ai, (x) => ({ ...x, name: e.target.value }))}
+                      />
+                    </label>
+                    <label className="edit-field" style={{ width: 110 }}>
+                      קו רוחב
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={a.lat ?? 0}
+                        onChange={(e) => updateActivity(idx, ai, (x) => ({ ...x, lat: Number(e.target.value) }))}
+                      />
+                    </label>
+                    <label className="edit-field" style={{ width: 110 }}>
+                      קו אורך
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={a.lng ?? 0}
+                        onChange={(e) => updateActivity(idx, ai, (x) => ({ ...x, lng: Number(e.target.value) }))}
+                      />
+                    </label>
+                    <button className="edit-btn danger" onClick={() => deleteActivity(idx, ai)}>מחק</button>
+                  </div>
+                ))}
+              </div>
               <label className="edit-field">
                 נסיעה
                 <input

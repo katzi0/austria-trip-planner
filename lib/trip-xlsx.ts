@@ -70,7 +70,7 @@ export function tripToWorkbook(trip: Trip): XLSX.WorkBook {
   const dayRows = trip.days.map((d) => {
     const row: Record<string, string | number> = {};
     for (const [key, header] of DAY_COLS) {
-      if (key === "acts") row[header] = d.acts.join("\n");
+      if (key === "acts") row[header] = d.acts.map((a) => a.name).join("\n");
       else if (key === "star") row[header] = boolOut(d.star);
       else if (key === "outlier") row[header] = boolOut(d.outlier);
       else if (key === "overnight") row[header] = d.overnight ?? "";
@@ -177,7 +177,8 @@ export function workbookToTrip(wb: XLSX.WorkBook): ImportResult {
       acts: strIn(r.acts)
         .split(/\r?\n/)
         .map((s) => s.trim())
-        .filter(Boolean),
+        .filter(Boolean)
+        .map((name) => ({ name })),
       drive: strIn(r.drive),
       cardLabel: strIn(r.cardLabel),
       cardClass: strIn(r.cardClass) as Day["cardClass"],

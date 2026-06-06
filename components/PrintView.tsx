@@ -28,7 +28,7 @@ export default function PrintView({ trip, id = "print" }: PrintViewProps) {
                   יום {d.n} · {d.d} {d.dow} — {d.title}
                 </b>
                 <br />
-                {d.acts.join(" · ")}
+                {d.acts.map((a) => a.name).join(" · ")}
                 <br />
                 נסיעה: {d.drive} · כרטיס: {d.cardLabel} · עומס:{" "}
                 {BUSY[d.intensity]}

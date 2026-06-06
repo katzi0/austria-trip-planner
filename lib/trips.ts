@@ -1,4 +1,4 @@
-import type { Trip } from "./trip-schema";
+import type { TripInput } from "./trip-schema";
 import { SEED_TRIP } from "./seed";
 import { NEVELOT_TRIP } from "./seed-nevelot";
 
@@ -14,5 +14,5 @@ export type TripSlug = (typeof TRIPS)[number]["slug"];
 export const isKnownSlug = (s: string): s is TripSlug =>
   TRIPS.some((t) => t.slug === s);
 
-export const seedFor = (slug: string): Trip =>
+export const seedFor = (slug: string): TripInput =>
   TRIPS.find((t) => t.slug === slug)?.seed ?? SEED_TRIP;

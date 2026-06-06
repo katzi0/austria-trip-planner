@@ -1,6 +1,6 @@
-import type { Trip } from "./trip-schema";
+import type { TripInput } from "./trip-schema";
 
-export const SEED_TRIP: Trip = {
+export const SEED_TRIP: TripInput = {
   baseOrder: ["moxy", "transfer-traunfall", "wagrain", "transfer-rittisberg", "ramsau", "transfer-linz", "henriette"],
   regions: {
     moxy: { name: "וינה · הגעה", short: "מוקסי", hex: "#C0851F", hotel: "Moxy (מוקסי)", town: "וינה", lat: 48.2169, lng: 16.3989, icon: "ferris" },
@@ -50,7 +50,7 @@ export const SEED_TRIP: Trip = {
       drive: "5 דקות", cardLabel: "חינם בכרטיס", cardClass: "free", food: "מסעדה ברמסאו / פיקניק",
       rain: "Badeparadies (באדהפראדיז)", tips: "הכרטיס תקף מ-13:00 · לקבל בקבלה!", overnight: "הלילה: Landhaus Birgbichler (רמסאו)" },
     { n: 9, d: "22.7", dow: "חמישי", base: "ramsau", color: "#8A47B0", intensity: 4, icon: "peak", lat: 47.4750, lng: 13.6110,
-      title: "Dachstein Glacier + Silberkarklamm", acts: ["Skywalk ב-2,700מ׳", "Stairway to Nothingness + Ice Palace", "Silberkarklamm — ערוץ"],
+      title: "Dachstein Glacier + Silberkarklamm", acts: [{ name: "Skywalk ב-2,700מ׳", lat: 47.4750, lng: 13.6060 }, { name: "Stairway to Nothingness + Ice Palace", lat: 47.4748, lng: 13.6055 }, { name: "Silberkarklamm — ערוץ", lat: 47.4090, lng: 13.6470 }],
       drive: "15 דק׳ לרכבל / 10 לערוץ", cardLabel: "פעם בשבוע בכרטיס", cardClass: "discount", food: "מסעדה בפסגה / Silberkarhütte",
       rain: "Salzwelten Altaussee", tips: "קר 4–8°C · חובה הזמנה derdachstein.at · יציאה 08:30" },
     { n: 10, d: "23.7", dow: "שישי", base: "ramsau", color: "#A84A9E", intensity: 4, icon: "kart", lat: 47.3890, lng: 13.6890,

@@ -104,7 +104,12 @@ export default function DetailPanel({
             {d.acts.map((a, i) => (
               <li key={i}>
                 <span className="pnl-step">{i + 1}</span>
-                <span className="pnl-step-text">{a}</span>
+                <span className="pnl-step-text">{a.name}</span>
+                {typeof a.lat === "number" && a.lat !== 0 && (
+                  <span className="pnl-step-pin" title="מסומן על המפה">
+                    <Icon name="car" size={11} />
+                  </span>
+                )}
               </li>
             ))}
           </ol>

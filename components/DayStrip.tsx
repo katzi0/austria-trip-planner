@@ -15,9 +15,6 @@ export interface DayStripProps {
   onNext: () => void;
   onToggleArea: () => void;
   onToggleDay: () => void;
-  tripList: { slug: string; label: string }[];
-  activeSlug: string;
-  onSwitchTrip: (slug: string) => void;
 }
 
 function Ridge({ intensity }: { intensity: number }) {
@@ -45,9 +42,6 @@ export default function DayStrip({
   onNext,
   onToggleArea,
   onToggleDay,
-  tripList,
-  activeSlug,
-  onSwitchTrip,
 }: DayStripProps) {
   const stripRef = useRef<HTMLDivElement>(null);
 
@@ -109,21 +103,6 @@ export default function DayStrip({
           <span className="strip-title">{stripTitle}</span>
         </div>
         <div className="tail">
-          {tripList.length > 1 && (
-            <div className="trip-switch" role="tablist" aria-label="בחירת טיול">
-              {tripList.map((t) => (
-                <button
-                  key={t.slug}
-                  role="tab"
-                  aria-selected={t.slug === activeSlug}
-                  className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
-                  onClick={() => onSwitchTrip(t.slug)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          )}
           <div className={`stepper${viewMode === "day" ? " show" : ""}`}>
             <button onClick={onPrev} disabled={prevDisabled} aria-label="יום קודם">
               ‹
