@@ -154,7 +154,8 @@ export default function EditPage() {
   function exportHtml() {
     if (!trip) return;
     const label = TRIPS.find((t) => t.slug === editSlug)?.label ?? editSlug;
-    const html = tripToEditorHtml(trip, label, `${editSlug}.json`);
+    const apiBase = typeof window !== "undefined" ? window.location.origin : "";
+    const html = tripToEditorHtml(trip, label, `${editSlug}.json`, apiBase, editSlug);
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

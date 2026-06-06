@@ -13,12 +13,16 @@ export function tripToEditorHtml(
   trip: Trip,
   title = "אוסטריה 2026 — עורך הטיול",
   downloadName = "trip.json",
+  apiBase = "",
+  slug = "",
 ): string {
   // Escape "<" so an embedded "</script>" can't break out of the data island.
   const dataJson = JSON.stringify(trip).replace(/</g, "\\u003c");
   const iconsJson = JSON.stringify(ICONS);
   const cardsJson = JSON.stringify(CARD_CLASSES);
   const nameJson = JSON.stringify(downloadName);
+  const apiJson = JSON.stringify(apiBase);
+  const slugJson = JSON.stringify(slug);
 
   return `<!doctype html>
 <html lang="he" dir="rtl">
@@ -62,18 +66,22 @@ export function tripToEditorHtml(
   .attr-item .card-head { margin-bottom:8px; }
   .attr-item .card-head b { font-size:13px; }
   .btn.add-sm { background:#eef5f0; color:var(--accent); border:1px dashed var(--accent); font-size:12px; padding:5px 11px; }
+  .save-pass { width:130px; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.55);
+    background:rgba(255,255,255,.15); color:#fff; font:inherit; font-size:13px; }
+  .save-pass::placeholder { color:rgba(255,255,255,.75); }
 </style>
 </head>
 <body>
 <header>
   <h1>${title}</h1>
-  <span class="note">עריכה מקומית · ללא חיבור לאינטרנט</span>
   <span class="spacer"></span>
   <span id="status"></span>
-  <button class="btn" id="download">⬇ הורד טיול מעודכן (JSON)</button>
+  <input id="save-pass" type="password" class="save-pass" placeholder="סיסמה" autocomplete="off" />
+  <button class="btn" id="save-site">⬆ שמור לאתר</button>
+  <button class="btn" id="download">⬇ הורד JSON</button>
 </header>
 <div class="wrap">
-  <p class="note">ערכו את השדות, ואז לחצו "הורד טיול מעודכן". שלחו את קובץ ה-JSON חזרה — הוא נטען חזרה במסך העריכה (/edit) דרך כפתור "ייבוא".</p>
+  <p class="note">ערכו את השדות. <b>לשמירה ישירה לאתר:</b> הזינו סיסמה ולחצו "שמור לאתר" (דורש אינטרנט). <b>ללא אינטרנט:</b> לחצו "הורד JSON" ושלחו את הקובץ — הוא נטען דרך כפתור ההעלאה באתר.</p>
 
   <h2>בסיסים (מלונות/אזורים)</h2>
   <div id="bases"></div>
@@ -89,6 +97,8 @@ const DATA = ${dataJson};
 const ICONS = ${iconsJson};
 const CARD_CLASSES = ${cardsJson};
 const DOWNLOAD_NAME = ${nameJson};
+const API_BASE = ${apiJson};
+const SLUG = ${slugJson};
 
 function el(tag, attrs={}, children=[]) {
   const n = document.createElement(tag);
@@ -318,6 +328,37 @@ document.getElementById("download").onclick = () => {
   const s = document.getElementById("status");
   s.textContent = "נשמר קובץ ✓ (" + trip.days.length + " ימים)";
   setTimeout(() => { s.textContent = ""; }, 4000);
+};
+
+// Save directly to the live site (passphrase-gated PATCH).
+const saveBtn = document.getElementById("save-site");
+if (!API_BASE) saveBtn.style.display = "none";
+saveBtn.onclick = async () => {
+  const s = document.getElementById("status");
+  const pass = document.getElementById("save-pass").value;
+  if (!pass) { s.textContent = "הזינו סיסמה"; return; }
+  const trip = collect();
+  saveBtn.disabled = true;
+  s.textContent = "שומר לאתר…";
+  try {
+    const res = await fetch(API_BASE + "/api/trip", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ passphrase: pass, trip, slug: SLUG }),
+    });
+    if (res.status === 401) { s.textContent = "סיסמה שגויה"; return; }
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      s.textContent = "שגיאה: " + (d.error || res.status);
+      return;
+    }
+    s.textContent = "נשמר לאתר ✓";
+    setTimeout(() => { s.textContent = ""; }, 4000);
+  } catch (e) {
+    s.textContent = "שגיאת רשת — בדקו חיבור לאינטרנט";
+  } finally {
+    saveBtn.disabled = false;
+  }
 };
 </script>
 </body>

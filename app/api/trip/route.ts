@@ -7,19 +7,36 @@ import { revalidatePath } from "next/cache";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+// CORS: lets the standalone offline HTML editor (a file:// page → "null" origin)
+// post directly to this endpoint. Writes stay passphrase-gated, so this does not
+// weaken protection.
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+function json(data: unknown, status = 200): NextResponse {
+  return NextResponse.json(data, { status, headers: CORS_HEADERS });
+}
+
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function GET(req: Request): Promise<NextResponse> {
   const slug = new URL(req.url).searchParams.get("slug") ?? DEFAULT_SLUG;
   if (!isKnownSlug(slug)) {
-    return NextResponse.json({ error: "unknown slug" }, { status: 400 });
+    return json({ error: "unknown slug" }, 400);
   }
   const trip = await readTrip(slug);
-  return NextResponse.json(trip);
+  return json(trip);
 }
 
 export async function PATCH(req: Request): Promise<NextResponse> {
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "bad body" }, { status: 400 });
+    return json({ error: "bad body" }, 400);
   }
   const { passphrase, trip, slug } = body as {
     passphrase?: string;
@@ -30,27 +47,21 @@ export async function PATCH(req: Request): Promise<NextResponse> {
   const isDev = process.env.NODE_ENV !== "production";
   if (!expected) {
     if (!isDev) {
-      return NextResponse.json(
-        { error: "edit gate not configured (set EDIT_PASSPHRASE)" },
-        { status: 503 },
-      );
+      return json({ error: "edit gate not configured (set EDIT_PASSPHRASE)" }, 503);
     }
     // Local dev with no passphrase configured — accept any value.
   } else if (passphrase !== expected) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return json({ error: "unauthorized" }, 401);
   }
   const targetSlug = slug ?? DEFAULT_SLUG;
   if (!isKnownSlug(targetSlug)) {
-    return NextResponse.json({ error: "unknown slug" }, { status: 400 });
+    return json({ error: "unknown slug" }, 400);
   }
   const parsed = TripSchema.safeParse(trip);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "invalid trip", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
+    return json({ error: "invalid trip", issues: parsed.error.flatten() }, 400);
   }
   await writeTrip(targetSlug, parsed.data);
   revalidatePath("/");
-  return NextResponse.json({ ok: true });
+  return json({ ok: true });
 }
