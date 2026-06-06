@@ -5,17 +5,29 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "seed": "tsx scripts/seed.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@turf/buffer": "^7.3.5",
+    "@turf/convex": "^7.3.5",
+    "@turf/helpers": "^7.3.5",
+    "@turf/union": "^7.3.5",
+    "@vercel/postgres": "^0.10.0",
+    "maplibre-gl": "^5.24.0",
     "next": "16.2.7",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@serwist/next": "^9.5.11",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "serwist": "^9.5.11",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }
