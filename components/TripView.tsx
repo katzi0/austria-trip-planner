@@ -391,6 +391,9 @@ export default function TripView({
         onNext={() => step(1)}
         onToggleArea={onToggleArea}
         onToggleDay={onToggleDay}
+        tripList={tripList}
+        activeSlug={activeSlug}
+        onSwitchTrip={onSwitchTrip}
       />
       <DetailPanel
         trip={trip}
