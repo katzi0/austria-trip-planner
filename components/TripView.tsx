@@ -63,6 +63,7 @@ export default function TripView({
   const isPhone = useIsPhone();
   const viewKey = `austria_view_${slug}`;
   const typeKey = `austria_type_${slug}`;
+  const phoneViewKey = `austria_phoneview_${slug}`;
   const tripLabel = tripList.find((t) => t.slug === slug)?.label;
   // SSR-safe initial state — read storage and today after mount.
   const [viewMode, setViewMode] = useState<ViewMode>("area");
@@ -76,6 +77,7 @@ export default function TripView({
   const [curPairing, setCurPairing] = useState<Pairing>("alpine");
   const [hydrated, setHydrated] = useState<boolean>(false);
   const [uploadOpen, setUploadOpen] = useState<boolean>(false);
+  const [phoneView, setPhoneView] = useState<PhoneView>("map");
 
   const { label: todayLabel, pulse: todayPulse } = useMemo(
     () => computeTodayLabel(trip),
@@ -99,6 +101,13 @@ export default function TripView({
       setCurPairing(storedType);
     }
 
+    const storedPhoneView = (typeof window !== "undefined"
+      ? localStorage.getItem(phoneViewKey)
+      : null) as PhoneView | null;
+    if (storedPhoneView === "map" || storedPhoneView === "list") {
+      setPhoneView(storedPhoneView);
+    }
+
     const tIdx = todayIndex(trip);
     if (tIdx >= 0) {
       setViewMode("day");
@@ -113,7 +122,7 @@ export default function TripView({
       setCurrentRegion("all");
     }
     setHydrated(true);
-  }, [trip, viewKey, typeKey, tripLabel]);
+  }, [trip, viewKey, typeKey, phoneViewKey, tripLabel]);
 
   // Persist viewMode.
   useEffect(() => {
@@ -124,6 +133,16 @@ export default function TripView({
       /* noop */
     }
   }, [viewMode, hydrated, viewKey]);
+
+  // Persist phoneView.
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(phoneViewKey, phoneView);
+    } catch {
+      /* noop */
+    }
+  }, [phoneView, hydrated, phoneViewKey]);
 
   // Apply typography pairing class on <html>.
   useEffect(() => {
@@ -374,46 +393,82 @@ export default function TripView({
             onSwitchTrip={onSwitchTrip}
           />
         )}
-        <Map
+        {isPhone && phoneView === "list" ? (
+          <TimelineList
+            trip={trip}
+            activeIdx={activeIdx}
+            onDayClick={onTimelineDayClick}
+          />
+        ) : (
+          <Map
+            trip={trip}
+            viewMode={viewMode}
+            dayScope={dayScope}
+            activeIdx={activeIdx}
+            onDayPinClick={onDayPinClick}
+            onHotelClick={onHotelClick}
+            onMiniPopupClick={onMiniPopupClick}
+          />
+        )}
+        {isPhone && (
+          <div className="float-stack">
+            {tripList.length > 1 && (
+              <div
+                className="trip-switch"
+                role="tablist"
+                aria-label="בחירת טיול"
+              >
+                {tripList.map((t) => (
+                  <button
+                    key={t.slug}
+                    role="tab"
+                    aria-selected={t.slug === activeSlug}
+                    className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
+                    onClick={() => onSwitchTrip(t.slug)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div
+              className="trip-switch"
+              role="tablist"
+              aria-label="תצוגה"
+            >
+              <button
+                role="tab"
+                aria-selected={phoneView === "map"}
+                className={`trip-switch-pill${phoneView === "map" ? " on" : ""}`}
+                onClick={() => setPhoneView("map")}
+              >
+                מפה
+              </button>
+              <button
+                role="tab"
+                aria-selected={phoneView === "list"}
+                className={`trip-switch-pill${phoneView === "list" ? " on" : ""}`}
+                onClick={() => setPhoneView("list")}
+              >
+                רשימה
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      {!(isPhone && phoneView === "list") && (
+        <DayStrip
           trip={trip}
           viewMode={viewMode}
           dayScope={dayScope}
           activeIdx={activeIdx}
-          onDayPinClick={onDayPinClick}
-          onHotelClick={onHotelClick}
-          onMiniPopupClick={onMiniPopupClick}
+          onTicketClick={onTicketClick}
+          onPrev={() => step(-1)}
+          onNext={() => step(1)}
+          onToggleArea={onToggleArea}
+          onToggleDay={onToggleDay}
         />
-        {isPhone && tripList.length > 1 && (
-          <div
-            className="trip-switch trip-switch-float"
-            role="tablist"
-            aria-label="בחירת טיול"
-          >
-            {tripList.map((t) => (
-              <button
-                key={t.slug}
-                role="tab"
-                aria-selected={t.slug === activeSlug}
-                className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
-                onClick={() => onSwitchTrip(t.slug)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <DayStrip
-        trip={trip}
-        viewMode={viewMode}
-        dayScope={dayScope}
-        activeIdx={activeIdx}
-        onTicketClick={onTicketClick}
-        onPrev={() => step(-1)}
-        onNext={() => step(1)}
-        onToggleArea={onToggleArea}
-        onToggleDay={onToggleDay}
-      />
+      )}
       <DetailPanel
         trip={trip}
         activeIdx={activeIdx}

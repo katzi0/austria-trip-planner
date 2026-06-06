@@ -56,7 +56,9 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .trip-switch-pill{background:transparent;border:none;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--ink2);white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
 .trip-switch-pill:hover{color:var(--ink)}
 .trip-switch-pill.on{background:var(--brand);color:#fff}
-.trip-switch-float{position:absolute;top:12px;left:12px;z-index:10;box-shadow:0 4px 14px rgba(22,38,30,.18)}
+.float-stack{position:absolute;top:12px;left:12px;z-index:10;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.float-stack .trip-switch{box-shadow:0 4px 14px rgba(22,38,30,.18)}
+.tl-listwrap{flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--paper)}
 .search-box{position:relative}
 .search-input{width:180px;height:34px;border-radius:10px;background:var(--paper2);border:1px solid var(--line);
   padding:0 12px;font-size:13px;color:var(--ink2);outline:none;transition:border-color .15s,color .15s,width .2s}
