@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Trip } from "@/lib/trip-schema";
 import { dateOf, todayIndex, visibleDayIndexes } from "@/lib/trip-utils";
 import Map from "./Map";
@@ -9,6 +10,7 @@ import DayStrip from "./DayStrip";
 import DetailPanel from "./DetailPanel";
 import TimelinePanel from "./TimelinePanel";
 import PrintView from "./PrintView";
+import UploadDialog from "./UploadDialog";
 
 type ViewMode = "area" | "day";
 type Pairing = "alpine" | "booking" | "journal";
@@ -53,6 +55,7 @@ export default function TripView({
   activeSlug,
   onSwitchTrip,
 }: TripViewProps) {
+  const router = useRouter();
   const viewKey = `austria_view_${slug}`;
   const typeKey = `austria_type_${slug}`;
   const tripLabel = tripList.find((t) => t.slug === slug)?.label;
@@ -67,6 +70,7 @@ export default function TripView({
   const [ribbonOpen, setRibbonOpen] = useState<boolean>(false);
   const [curPairing, setCurPairing] = useState<Pairing>("alpine");
   const [hydrated, setHydrated] = useState<boolean>(false);
+  const [uploadOpen, setUploadOpen] = useState<boolean>(false);
 
   const { label: todayLabel, pulse: todayPulse } = useMemo(
     () => computeTodayLabel(trip),
@@ -227,6 +231,10 @@ export default function TripView({
     setTimelineOpen((v) => !v);
   }, []);
 
+  const onUploadClick = useCallback(() => {
+    setUploadOpen(true);
+  }, []);
+
   const closeTimeline = useCallback(() => {
     setTimelineOpen(false);
   }, []);
@@ -351,6 +359,7 @@ export default function TripView({
           onTypeOpen={onTypeOpen}
           onPrintClick={onPrintClick}
           onTimelineClick={onTimelineClick}
+          onUploadClick={onUploadClick}
           todayLabel={todayLabel}
           todayPulse={todayPulse}
           typeMenuChildren={typeMenu}
@@ -393,6 +402,12 @@ export default function TripView({
         onDayClick={onTimelineDayClick}
       />
       <PrintView trip={trip} />
+      <UploadDialog
+        open={uploadOpen}
+        slug={slug}
+        onClose={() => setUploadOpen(false)}
+        onUpdated={() => router.refresh()}
+      />
     </div>
   );
 }

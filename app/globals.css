@@ -344,3 +344,32 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 }
 
 .maplibregl-canvas:focus{outline:none}
+
+/* Detail-panel area attractions */
+.pnl-attractions{display:flex;flex-direction:column;gap:9px}
+.attr{border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:var(--paper)}
+.attr-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.attr-name{font-weight:700;font-size:14px;color:var(--ink)}
+.attr-card{font-size:10.5px;font-weight:700;color:var(--brand);background:#e7f3ec;border:1px solid #bfe0cb;
+  border-radius:999px;padding:2px 8px;white-space:nowrap;flex:0 0 auto}
+.attr-desc{font-size:13px;color:var(--ink2);line-height:1.5;margin:7px 0 0}
+.attr-row{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;color:var(--ink2);margin-top:6px}
+.attr-row svg{flex:0 0 auto;margin-top:2px;color:var(--muted)}
+.attr-row b{color:var(--ink);font-weight:700;margin-inline-end:2px}
+
+/* Upload-from-file modal (main view) */
+.upload-scrim{position:fixed;inset:0;z-index:1400;background:rgba(22,38,30,.34);
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.upload-modal{width:min(440px,94vw);background:var(--paper2);border:1px solid var(--line);
+  border-radius:16px;box-shadow:0 24px 60px rgba(22,38,30,.3);padding:18px}
+.upload-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.upload-head h3{font-family:var(--serif);font-size:18px;margin:0}
+.upload-x{background:rgba(22,38,30,.06);border:none;width:30px;height:30px;border-radius:9px;
+  font-size:20px;color:var(--muted)}
+.upload-note{font-size:13px;color:var(--ink2);line-height:1.55;margin:0 0 12px}
+.upload-field{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);margin-bottom:12px}
+.upload-field input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:9px;background:#fff;color:var(--ink)}
+.upload-msg{font-size:13px;color:var(--brand);margin-bottom:10px}
+.upload-msg.error{color:#B6452F}
+.upload-actions{display:flex;gap:9px;align-items:center}

@@ -19,6 +19,7 @@ export interface RibbonProps {
   onTypeOpen: () => void;
   onPrintClick: () => void;
   onTimelineClick: () => void;
+  onUploadClick: () => void;
   todayLabel: string;
   todayPulse?: boolean;
   typeMenuChildren?: ReactNode;
@@ -41,6 +42,7 @@ export default function Ribbon({
   onTypeOpen,
   onPrintClick,
   onTimelineClick,
+  onUploadClick,
   todayLabel,
   todayPulse = true,
   typeMenuChildren,
@@ -326,6 +328,25 @@ export default function Ribbon({
           title="ציר זמן"
         >
           <Icon name="timeline" size={17} />
+        </button>
+        <button
+          className="iconbtn"
+          onClick={onUploadClick}
+          aria-label="עדכון התוכנית מקובץ"
+          title="עדכון תוכנית"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width={17}
+            height={17}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+          </svg>
         </button>
         <button
           className="iconbtn"

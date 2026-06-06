@@ -7,7 +7,12 @@ export const SEED_TRIP: Trip = {
     "transfer-traunfall": { name: "מעבר · Traunfall + Grünberg", short: "מעבר", hex: "#7B8C7A", hotel: "Alpina Wagrain", town: "ואגריין", lat: 48.0573, lng: 13.8512, icon: "suitcase" },
     wagrain: { name: "ואגריין", short: "ואגריין", hex: "#1F86AE", hotel: "Alpina Wagrain", town: "ואגריין", lat: 47.3339, lng: 13.2986, icon: "cablecar" },
     "transfer-rittisberg": { name: "מעבר · Rittisberg", short: "מעבר", hex: "#7B8C7A", hotel: "Landhaus Birgbichler", town: "רמסאו", lat: 47.4130, lng: 13.6590, icon: "suitcase" },
-    ramsau: { name: "רמסאו", short: "רמסאו", hex: "#8B45AD", hotel: "Landhaus Birgbichler", town: "רמסאו", lat: 47.4156, lng: 13.6469, icon: "peak" },
+    ramsau: { name: "רמסאו", short: "רמסאו", hex: "#8B45AD", hotel: "Landhaus Birgbichler", town: "רמסאו", lat: 47.4156, lng: 13.6469, icon: "peak",
+      attractions: [
+        { name: "קרחון דכשטיין (Dachstein Glacier)", desc: "רכבל לפסגה 2,700מ׳ עם Skywalk, גשר תלוי וארמון קרח. קר מאוד למעלה (4–8°C).", tips: "חובה הזמנה מראש · יציאה מוקדמת 08:30.", parking: "חניון Türlwand, ~3 דק׳ הליכה לתחנה", card: true },
+        { name: "Silberkarklamm (ערוץ הכסף)", desc: "ערוץ מים עם גשרים ומפלים, מסלול הליכה כשעה–שעתיים.", tips: "נעליים סגורות · דמי כניסה קטנים במזומן.", parking: "חניה ליד Silberkarhütte בכניסה לערוץ" },
+      ],
+    },
     "transfer-linz": { name: "מעבר · Ars Electronica (לינץ)", short: "מעבר", hex: "#7B8C7A", hotel: "Henriette", town: "וינה", lat: 48.3100, lng: 14.2840, icon: "suitcase" },
     henriette: { name: "וינה · סיום", short: "וינה", hex: "#4C9438", hotel: "Henriette", town: "וינה", lat: 48.2197, lng: 16.3760, icon: "palace" },
   },

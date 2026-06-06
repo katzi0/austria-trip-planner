@@ -120,6 +120,38 @@ export default function DetailPanel({
             ))}
           </ol>
         </section>
+        {r.attractions && r.attractions.length > 0 && (
+          <section className="pnl-sec">
+            <h4>אטרקציות באזור</h4>
+            <div className="pnl-attractions">
+              {r.attractions.map((a, i) => (
+                <div className="attr" key={i}>
+                  <div className="attr-top">
+                    <span className="attr-name">{a.name}</span>
+                    {a.card && <span className="attr-card">כלול בכרטיס הקיץ</span>}
+                  </div>
+                  {a.desc && <p className="attr-desc">{a.desc}</p>}
+                  {a.parking && (
+                    <div className="attr-row">
+                      <Icon name="car" size={13} />
+                      <span>
+                        <b>חניה:</b> {a.parking}
+                      </span>
+                    </div>
+                  )}
+                  {a.tips && (
+                    <div className="attr-row">
+                      <Icon name="star" size={13} />
+                      <span>
+                        <b>טיפ:</b> {a.tips}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
         <section className="pnl-sec">
           <h4>אוכל</h4>
           <p>{d.food}</p>

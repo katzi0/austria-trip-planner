@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Trip, Day, Region } from "@/lib/trip-schema";
+import type { Trip, Day, Region, Attraction } from "@/lib/trip-schema";
 import { TRIPS, DEFAULT_SLUG, isKnownSlug } from "@/lib/trips";
+import { tripToEditorHtml } from "@/lib/trip-html-editor";
 
 const ICON_OPTIONS = [
   "ferris",
@@ -126,6 +127,45 @@ export default function EditPage() {
     });
   }
 
+  function addAttraction(key: string) {
+    updateRegion(key, (r) => ({
+      ...r,
+      attractions: [...(r.attractions ?? []), { name: "" } as Attraction],
+    }));
+  }
+
+  function updateAttraction(key: string, i: number, mut: (a: Attraction) => Attraction) {
+    updateRegion(key, (r) => {
+      const list = [...(r.attractions ?? [])];
+      if (!list[i]) return r;
+      list[i] = mut(list[i]);
+      return { ...r, attractions: list };
+    });
+  }
+
+  function deleteAttraction(key: string, i: number) {
+    updateRegion(key, (r) => {
+      const list = [...(r.attractions ?? [])];
+      list.splice(i, 1);
+      return { ...r, attractions: list.length ? list : undefined };
+    });
+  }
+
+  function exportHtml() {
+    if (!trip) return;
+    const label = TRIPS.find((t) => t.slug === editSlug)?.label ?? editSlug;
+    const html = tripToEditorHtml(trip, label, `${editSlug}.json`);
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${editSlug}-editor.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   function addDay() {
     updateTrip((t) => {
       const nextN = t.days.length ? Math.max(...t.days.map((d) => d.n)) + 1 : 1;
@@ -238,6 +278,9 @@ export default function EditPage() {
           <button className="edit-btn" onClick={save} disabled={status.kind === "loading"}>
             {status.kind === "loading" ? "שומר…" : "שמור"}
           </button>
+          <button className="edit-btn secondary" onClick={exportHtml} title="הורדת קובץ עריכה לשיתוף">
+            ייצוא לעורך HTML
+          </button>
           {status.kind === "ok" && <span className="edit-msg">{status.msg}</span>}
           {status.kind === "err" && <span className="edit-msg error">{status.msg}</span>}
         </div>
@@ -331,6 +374,78 @@ export default function EditPage() {
                     ))}
                   </select>
                 </label>
+              </div>
+
+              <div className="edit-attractions">
+                <div className="edit-row" style={{ justifyContent: "space-between", margin: "12px 0 6px" }}>
+                  <strong style={{ fontSize: 14 }}>אטרקציות באזור</strong>
+                  <button className="edit-btn secondary" onClick={() => addAttraction(key)}>+ הוסף אטרקציה</button>
+                </div>
+                {(r.attractions ?? []).map((a, ai) => (
+                  <div className="edit-card" key={ai} style={{ marginBottom: 8, background: "#fbfaf6" }}>
+                    <div className="edit-row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, color: "#6f685c" }}>אטרקציה {ai + 1}</span>
+                      <button className="edit-btn danger" onClick={() => deleteAttraction(key, ai)}>מחק</button>
+                    </div>
+                    <div className="edit-grid">
+                      <label className="edit-field" style={{ gridColumn: "1 / -1" }}>
+                        שם
+                        <input
+                          type="text"
+                          value={a.name}
+                          onChange={(e) => updateAttraction(key, ai, (x) => ({ ...x, name: e.target.value }))}
+                        />
+                      </label>
+                      <label className="edit-field" style={{ gridColumn: "1 / -1" }}>
+                        תיאור
+                        <textarea
+                          value={a.desc ?? ""}
+                          onChange={(e) =>
+                            updateAttraction(key, ai, (x) => ({
+                              ...x,
+                              desc: e.target.value === "" ? undefined : e.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                      <label className="edit-field" style={{ gridColumn: "1 / -1" }}>
+                        טיפים
+                        <textarea
+                          value={a.tips ?? ""}
+                          onChange={(e) =>
+                            updateAttraction(key, ai, (x) => ({
+                              ...x,
+                              tips: e.target.value === "" ? undefined : e.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                      <label className="edit-field">
+                        חניה
+                        <input
+                          type="text"
+                          value={a.parking ?? ""}
+                          onChange={(e) =>
+                            updateAttraction(key, ai, (x) => ({
+                              ...x,
+                              parking: e.target.value === "" ? undefined : e.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                      <label className="edit-field" style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={a.card ?? false}
+                          onChange={(e) =>
+                            updateAttraction(key, ai, (x) => ({ ...x, card: e.target.checked || undefined }))
+                          }
+                        />
+                        כלול בכרטיס הקיץ
+                      </label>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           );

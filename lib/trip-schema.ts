@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+export const AttractionSchema = z.object({
+  name: z.string(),
+  desc: z.string().optional(),      // description → shown in the detail panel
+  tips: z.string().optional(),      // important tips
+  card: z.boolean().optional(),     // included in the area summer card
+  parking: z.string().optional(),   // where to park nearby
+});
+
 export const RegionSchema = z.object({
   name: z.string(),
   short: z.string(),
@@ -9,6 +17,7 @@ export const RegionSchema = z.object({
   lat: z.number(),
   lng: z.number(),
   icon: z.string(),
+  attractions: z.array(AttractionSchema).optional(),
 });
 
 export const DaySchema = z.object({
@@ -40,6 +49,7 @@ export const TripSchema = z.object({
   days: z.array(DaySchema),
 });
 
+export type Attraction = z.infer<typeof AttractionSchema>;
 export type Region = z.infer<typeof RegionSchema>;
 export type Day = z.infer<typeof DaySchema>;
 export type Trip = z.infer<typeof TripSchema>;
