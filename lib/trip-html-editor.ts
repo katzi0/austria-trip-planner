@@ -83,6 +83,12 @@ export function tripToEditorHtml(
   .save-pass { width:130px; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.55);
     background:rgba(255,255,255,.15); color:#fff; font:inherit; font-size:13px; }
   .save-pass::placeholder { color:rgba(255,255,255,.75); }
+  .guide-box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 16px; margin-bottom:14px; }
+  .guide-box > summary { cursor:pointer; font-weight:700; font-size:16px; color:var(--accent); padding:6px 0; }
+  .guide { margin:6px 0 10px; padding-inline-start:20px; font-size:13.5px; color:#3c372f; line-height:1.85; }
+  .guide li { margin-bottom:5px; }
+  .guide b { color:var(--ink); }
+  .guide .tag { background:#eef5f0; color:var(--accent); border-radius:6px; padding:1px 6px; font-weight:700; white-space:nowrap; }
   .ai-box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 14px; margin-bottom:14px; }
   .ai-box > summary { cursor:pointer; font-weight:700; font-size:15px; color:var(--accent); padding:6px 0; }
   .ai-box .step { font-size:13px; color:#5a554c; margin:8px 0; line-height:1.6; }
@@ -103,7 +109,16 @@ export function tripToEditorHtml(
   <button class="btn" id="download">⬇ הורד JSON</button>
 </header>
 <div class="wrap">
-  <p class="note">מלאו את כל השדות. את הקואורדינטות (קו רוחב/אורך) אפשר להשאיר על 0 — ה-AI ימלא אותן. <b>שמירה לאתר:</b> סיסמה + "שמור לאתר". <b>ללא אינטרנט:</b> "הורד JSON" והעלו אותו באתר.</p>
+  <details class="guide-box" open>
+    <summary>📖 איך עורכים את הטיול?</summary>
+    <ol class="guide">
+      <li><b>ממלאים את הפרטים.</b> לכל <b>יום</b> — תאריך, כותרת ורשימת <b>פעילויות</b> (פשוט כותבים את שם הפעילות). לכל <b>אזור</b> — מלון, עיר ו<b>אטרקציות</b> (תיאור, טיפים, חניה, וסימון אם כלול בכרטיס הקיץ).</li>
+      <li><b>את הקואורדינטות משאירים על 0.</b> שדות "קו רוחב/אורך" מסומנים <span class="tag">AI ימלא</span> — לא צריך למלא אותם ידנית.</li>
+      <li><b>ממלאים קואורדינטות עם AI.</b> בקופסה <b>"🤖 מילוי קואורדינטות עם AI"</b>: לוחצים <span class="tag">הכן בקשה ל-AI</span>, מדביקים את הטקסט בכלי בינה (ChatGPT / Claude), ואז מדביקים את התשובה חזרה ולוחצים <span class="tag">טען תשובה</span>.</li>
+      <li><b>שומרים לאתר.</b> מזינים סיסמה ולוחצים <span class="tag">שמור לאתר</span> (דורש אינטרנט). ללא אינטרנט — לוחצים <span class="tag">הורד JSON</span> ושולחים את הקובץ, והוא נטען באתר דרך כפתור "עדכון תוכנית".</li>
+      <li><b>מה רואים בסוף.</b> הימים והפעילויות מופיעים כסיכות על המפה (ממוספרות ומחוברות בקו כשפותחים יום), והאטרקציות מופיעות בפאנל הצדדי תחת "אטרקציות באזור".</li>
+    </ol>
+  </details>
 
   <details class="ai-box">
     <summary>🤖 מילוי קואורדינטות עם AI</summary>
