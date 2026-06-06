@@ -85,7 +85,6 @@ export default function DetailPanel({
         </button>
       </div>
       <div className="pnl-body">
-        <h2 className="pnl-title">{d.title}</h2>
         <div className="pnl-area">
           <Icon name={r.icon} size={14} />
           <span>
@@ -110,13 +109,16 @@ export default function DetailPanel({
             {d.drive}
           </span>
         </div>
-        <section className="pnl-sec">
-          <h4>מסלול היום</h4>
-          <ul className="pnl-acts">
+        <section className="pnl-sec pnl-agenda">
+          <h4>תוכנית היום</h4>
+          <ol className="pnl-acts">
             {d.acts.map((a, i) => (
-              <li key={i}>{a}</li>
+              <li key={i}>
+                <span className="pnl-step">{i + 1}</span>
+                <span className="pnl-step-text">{a}</span>
+              </li>
             ))}
-          </ul>
+          </ol>
         </section>
         <section className="pnl-sec">
           <h4>אוכל</h4>

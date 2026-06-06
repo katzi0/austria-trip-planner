@@ -1,11 +1,14 @@
 import type { Trip } from "./trip-schema";
 
 export const SEED_TRIP: Trip = {
-  baseOrder: ["moxy", "wagrain", "ramsau", "henriette"],
+  baseOrder: ["moxy", "transfer-traunfall", "wagrain", "transfer-rittisberg", "ramsau", "transfer-linz", "henriette"],
   regions: {
     moxy: { name: "וינה · הגעה", short: "מוקסי", hex: "#C0851F", hotel: "Moxy (מוקסי)", lat: 48.2169, lng: 16.3989, icon: "ferris" },
+    "transfer-traunfall": { name: "מעבר · Traunfall + Grünberg", short: "מעבר", hex: "#7B8C7A", hotel: "Alpina Wagrain", lat: 48.0573, lng: 13.8512, icon: "car" },
     wagrain: { name: "ואגריין", short: "ואגריין", hex: "#1F86AE", hotel: "Alpina Wagrain", lat: 47.3339, lng: 13.2986, icon: "cablecar" },
+    "transfer-rittisberg": { name: "מעבר · Rittisberg", short: "מעבר", hex: "#7B8C7A", hotel: "Landhaus Birgbichler", lat: 47.4130, lng: 13.6590, icon: "car" },
     ramsau: { name: "רמסאו", short: "רמסאו", hex: "#8B45AD", hotel: "Landhaus Birgbichler", lat: 47.4156, lng: 13.6469, icon: "peak" },
+    "transfer-linz": { name: "מעבר · Ars Electronica (לינץ)", short: "מעבר", hex: "#7B8C7A", hotel: "Henriette", lat: 48.3100, lng: 14.2840, icon: "car" },
     henriette: { name: "וינה · סיום", short: "וינה", hex: "#4C9438", hotel: "Henriette", lat: 48.2197, lng: 16.3760, icon: "palace" },
   },
   days: [
@@ -13,7 +16,7 @@ export const SEED_TRIP: Trip = {
       title: "נחיתה ולינה בוינה", acts: ["Prater (פראטר) — גלגל ענק", "כניסה חינם · אטרקציות 5–7€"],
       drive: "הליכה ברגל", cardLabel: "ללא כרטיס", cardClass: "na", food: "כולל ארוחת בוקר · Schweizerhaus",
       rain: "—", tips: "פראטר פתוח עד מאוחר · להביא מזומן", overnight: "הלילה: Moxy (וינה)" },
-    { n: 2, d: "15.7", dow: "חמישי", base: "wagrain", color: "#1E6FB0", intensity: 4, icon: "cablecar", lat: 48.0573, lng: 13.8512,
+    { n: 2, d: "15.7", dow: "חמישי", base: "transfer-traunfall", color: "#1E6FB0", intensity: 4, icon: "cablecar", lat: 48.0573, lng: 13.8512,
       title: "Traunfall + Grünberg + שביל צמרות", acts: ["Traunfall (מפלי טראון) — מפל 200מ׳", "רכבל Grünberg + Baumwipfelpfad", "מגלשה לאורך ההר"],
       drive: "~2 שעות מוינה", cardLabel: "לא בכרטיס", cardClass: "none", food: "Berggasthof בפסגה / גמונדן",
       rain: "לדלג ולעלות ישר לוואגריין", tips: "עצירה יפה בדרך · מתאים מאוד לבני 6–8" },
@@ -37,7 +40,7 @@ export const SEED_TRIP: Trip = {
       title: "Alpentherme Gastein (אלפנתרמה גשטיין)", acts: ["Family World — מגלשות + lazy river", "אגמי שחייה תרמיים", "Alpe Adria Dome"],
       drive: "50 דקות", cardLabel: "אזור נפרד", cardClass: "none", food: "מסעדה באתר",
       rain: "מושלם — כולו פתוח בכל מזג", tips: "יום מנוחה ופינוק · ילד עד 6 חינם" },
-    { n: 8, d: "21.7", dow: "רביעי", base: "ramsau", color: "#6A4FB0", intensity: 3, icon: "coaster", lat: 47.4130, lng: 13.6590,
+    { n: 8, d: "21.7", dow: "רביעי", base: "transfer-rittisberg", color: "#6A4FB0", intensity: 3, icon: "coaster", lat: 47.4130, lng: 13.6590,
       title: "מעבר + Rittisberg Adventure Park", acts: ["Coaster + Flyline", "פארק חבלים בעצים"],
       drive: "5 דקות", cardLabel: "חינם בכרטיס", cardClass: "free", food: "מסעדה ברמסאו / פיקניק",
       rain: "Badeparadies (באדהפראדיז)", tips: "הכרטיס תקף מ-13:00 · לקבל בקבלה!", overnight: "הלילה: Landhaus Birgbichler (רמסאו)" },
@@ -61,7 +64,7 @@ export const SEED_TRIP: Trip = {
       title: "יום Flachau: Lucky Flitzer + Hermann Maier", acts: ["Lucky Flitzer (לאקי פליצר) 1,100מ׳", "Hermann Maier: Quad + 3D Archery", "פארק שעשועים"],
       drive: "60 דק׳ לכל כיוון (A10)", cardLabel: "אזור Sportwelt", cardClass: "none", food: "Rodelalm Restaurant",
       rain: "כל האטרקציות עובדות בגשם", tips: "מצוין לבני 6–8 · נסיעה 2ש׳ ביום · 09:00–17:00" },
-    { n: 14, d: "27.7", dow: "שלישי", star: true, outlier: true, base: "ramsau", color: "#C24E78", intensity: 4, icon: "museum", lat: 48.3100, lng: 14.2840,
+    { n: 14, d: "27.7", dow: "שלישי", star: true, base: "transfer-linz", color: "#C24E78", intensity: 4, icon: "museum", lat: 48.3100, lng: 14.2840,
       title: "יום מעבר · Ars Electronica (לינץ)", acts: ["Kids Research Lab — 11 תחנות", "Deep Space 8K", "תערוכות אינטראקטיביות"],
       drive: "90 דק׳ ללינץ + 2:30ש׳ לוינה", cardLabel: "לא בכרטיס", cardClass: "none", food: "קפיטריה / Jindrak (לינצר טורטה)",
       rain: "מקורה לחלוטין — אידיאלי לגשם", tips: "בן 6 נכנס חינם · יציאה 10:00 · הגעה הנרייטה 17:00", overnight: "הלילה: עוברים ל-Henriette (וינה)" },

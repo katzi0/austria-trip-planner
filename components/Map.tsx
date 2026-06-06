@@ -3,11 +3,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import convex from "@turf/convex";
-import buffer from "@turf/buffer";
-import union from "@turf/union";
-import { featureCollection, point } from "@turf/helpers";
-import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
+import type { Feature, FeatureCollection } from "geojson";
 
 import type { Trip, Region } from "@/lib/trip-schema";
 import { iconSvg } from "@/components/icons";
@@ -25,8 +21,6 @@ export interface MapProps {
 
 type LngLat = [number, number];
 
-type PolyShape = Feature<Polygon | MultiPolygon>;
-
 const MAP_STYLE =
   process.env.NEXT_PUBLIC_MAP_STYLE_URL ||
   "https://tiles.openfreemap.org/styles/liberty";
@@ -42,47 +36,6 @@ function emptyLineFC(): FeatureCollection {
   return { type: "FeatureCollection", features: [] };
 }
 
-function polygonSourceIds(key: string) {
-  return {
-    source: `polygon-${key}-source`,
-    fill: `polygon-${key}-fill`,
-    line: `polygon-${key}-line`,
-  };
-}
-
-function buildRegionShape(trip: Trip, key: string): PolyShape | null {
-  const r = trip.regions[key];
-  if (!r) return null;
-  const pts: LngLat[] = [[r.lng, r.lat]];
-  trip.days.forEach((d) => {
-    if (d.base === key && !d.outlier) pts.push([d.lng, d.lat]);
-  });
-  try {
-    const fc = featureCollection(pts.map((p) => point(p)));
-    if (pts.length >= 3) {
-      const hull = convex(fc);
-      if (hull) {
-        const buffered = buffer(hull, 4.5, { units: "kilometers" });
-        if (buffered) return buffered as PolyShape;
-      }
-    }
-    const bf = buffer(fc, 7, { units: "kilometers" });
-    if (!bf) return null;
-    const features: Feature<Polygon | MultiPolygon>[] = bf.features;
-    if (!features.length) return null;
-    let acc: Feature<Polygon | MultiPolygon> = features[0];
-    for (let i = 1; i < features.length; i++) {
-      const u: Feature<Polygon | MultiPolygon> | null = union(
-        featureCollection([acc, features[i]]),
-      );
-      if (u) acc = u;
-    }
-    return acc;
-  } catch {
-    return null;
-  }
-}
-
 function padFor(map: maplibregl.Map): number {
   const c = map.getContainer();
   const w = c.clientWidth || 800;
@@ -96,26 +49,46 @@ function boundsOf(points: LngLat[]): maplibregl.LngLatBounds {
   return b;
 }
 
-function makePinElement(color: string, icon: string): HTMLDivElement {
+function makePinElement(
+  color: string,
+  icon: string,
+  dayN: number,
+  date: string,
+  dow: string,
+  title: string,
+): HTMLDivElement {
   const wrap = document.createElement("div");
   wrap.className = "pinwrap";
+  wrap.title = title;
   wrap.innerHTML = `<div class="pin" style="background:${color}"><span>${iconSvg(icon, 16)}</span></div>`;
+  const label = document.createElement("div");
+  label.className = "pinlabel";
+  const head = document.createElement("div");
+  head.className = "pl-head";
+  head.textContent = title;
+  const sub = document.createElement("div");
+  sub.className = "pl-sub";
+  sub.textContent = `יום ${dayN} · ${date} · ${dow}`;
+  label.appendChild(head);
+  label.appendChild(sub);
+  wrap.appendChild(label);
   return wrap;
 }
 
 function makeHotelElement(r: Region): HTMLDivElement {
-  const el = document.createElement("div");
-  el.className = "hotel";
-  el.style.setProperty("--hc", r.hex);
-  el.innerHTML = iconSvg("bed", 15);
-  el.title = r.hotel;
-  return el;
-}
-
-function regionsInScope(trip: Trip, viewMode: "area" | "day", dayScope: string): string[] {
-  if (viewMode === "area") return trip.baseOrder.slice();
-  if (dayScope === "all") return trip.baseOrder.slice();
-  return trip.baseOrder.filter((k) => k === dayScope);
+  const wrap = document.createElement("div");
+  wrap.className = "hotelwrap";
+  wrap.style.setProperty("--hc", r.hex);
+  wrap.title = r.hotel;
+  const icon = document.createElement("div");
+  icon.className = "hotel";
+  icon.innerHTML = iconSvg("bed", 15);
+  wrap.appendChild(icon);
+  const label = document.createElement("div");
+  label.className = "hotellabel";
+  label.textContent = r.hotel;
+  wrap.appendChild(label);
+  return wrap;
 }
 
 export default function Map(props: MapProps): React.JSX.Element {
@@ -129,7 +102,6 @@ export default function Map(props: MapProps): React.JSX.Element {
   const readyRef = useRef(false);
   const dayMarkersRef = useRef<maplibregl.Marker[]>([]);
   const hotelMarkersRef = useRef<Record<string, maplibregl.Marker>>({});
-  const polygonKeysRef = useRef<Set<string>>(new Set());
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const rafRef = useRef<number | null>(null);
   const resizeObsRef = useRef<ResizeObserver | null>(null);
@@ -187,9 +159,8 @@ export default function Map(props: MapProps): React.JSX.Element {
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
           "line-color": ["coalesce", ["get", "color"], "#888"],
-          "line-width": 2.5,
-          "line-opacity": 0.42,
-          "line-dasharray": [1, 3],
+          "line-width": 3,
+          "line-opacity": 0.78,
         },
       });
       map.resize();
@@ -246,7 +217,6 @@ export default function Map(props: MapProps): React.JSX.Element {
       dayMarkersRef.current = [];
       Object.values(hotelMarkersRef.current).forEach((m) => m.remove());
       hotelMarkersRef.current = {};
-      polygonKeysRef.current.clear();
       readyRef.current = false;
       map.remove();
       mapRef.current = null;
@@ -266,7 +236,7 @@ export default function Map(props: MapProps): React.JSX.Element {
     hotelMarkersRef.current = {};
 
     trip.days.forEach((day, i) => {
-      const el = makePinElement(day.color, day.icon);
+      const el = makePinElement(day.color, day.icon, day.n, day.d, day.dow, day.title);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         cbRef.current.onDayPinClick(i);
@@ -300,7 +270,6 @@ export default function Map(props: MapProps): React.JSX.Element {
 
   function forceUpdate() {
     applyPinStates();
-    applyPolygons();
     applyBaseRoutes();
     applyDayRoute();
     applyCamera();
@@ -335,91 +304,46 @@ export default function Map(props: MapProps): React.JSX.Element {
     });
   }
 
-  function applyPolygons() {
-    const map = mapRef.current;
-    if (!map || !readyRef.current) return;
-    const want = new Set(regionsInScope(trip, viewMode, dayScope));
-
-    // Remove layers/sources no longer wanted.
-    polygonKeysRef.current.forEach((key) => {
-      if (!want.has(key)) {
-        const ids = polygonSourceIds(key);
-        if (map.getLayer(ids.fill)) map.removeLayer(ids.fill);
-        if (map.getLayer(ids.line)) map.removeLayer(ids.line);
-        if (map.getSource(ids.source)) map.removeSource(ids.source);
-        polygonKeysRef.current.delete(key);
-      }
-    });
-
-    // Add/update wanted.
-    want.forEach((key) => {
-      const shape = buildRegionShape(trip, key);
-      if (!shape) return;
-      const r = trip.regions[key];
-      const ids = polygonSourceIds(key);
-      const data = shape as Feature<Polygon | MultiPolygon>;
-      const existing = map.getSource(ids.source) as maplibregl.GeoJSONSource | undefined;
-      if (existing) {
-        existing.setData(data);
-      } else {
-        map.addSource(ids.source, { type: "geojson", data });
-        map.addLayer(
-          {
-            id: ids.fill,
-            type: "fill",
-            source: ids.source,
-            paint: {
-              "fill-color": r.hex,
-              "fill-opacity": 0.1,
-            },
-          },
-          ROUTE_GLOW_LAYER,
-        );
-        map.addLayer(
-          {
-            id: ids.line,
-            type: "line",
-            source: ids.source,
-            layout: { "line-cap": "round", "line-join": "round" },
-            paint: {
-              "line-color": r.hex,
-              "line-width": 1.8,
-              "line-opacity": 0.8,
-              "line-dasharray": [3, 2],
-            },
-          },
-          ROUTE_GLOW_LAYER,
-        );
-        polygonKeysRef.current.add(key);
-      }
-    });
-  }
-
   function applyBaseRoutes() {
     const map = mapRef.current;
     if (!map || !readyRef.current) return;
     const src = map.getSource(BASE_ROUTE_SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
     const features: Feature[] = [];
-    if (viewMode === "day" && dayScope !== "all") {
-      const r = trip.regions[dayScope];
-      if (r) {
-        trip.days.forEach((d) => {
-          if (d.base === dayScope) {
-            features.push({
-              type: "Feature",
-              properties: { color: d.color },
-              geometry: {
-                type: "LineString",
-                coordinates: [
-                  [r.lng, r.lat],
-                  [d.lng, d.lat],
-                ],
-              },
-            });
-          }
+    if (viewMode === "area") {
+      for (let i = 0; i < trip.baseOrder.length - 1; i++) {
+        const from = trip.regions[trip.baseOrder[i]];
+        const to = trip.regions[trip.baseOrder[i + 1]];
+        if (!from || !to) continue;
+        features.push({
+          type: "Feature",
+          properties: { color: to.hex },
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [from.lng, from.lat],
+              [to.lng, to.lat],
+            ],
+          },
         });
       }
+    } else if (viewMode === "day") {
+      trip.days.forEach((d) => {
+        if (dayScope !== "all" && d.base !== dayScope) return;
+        const r = trip.regions[d.base];
+        if (!r) return;
+        features.push({
+          type: "Feature",
+          properties: { color: d.color },
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [r.lng, r.lat],
+              [d.lng, d.lat],
+            ],
+          },
+        });
+      });
     }
     src.setData({ type: "FeatureCollection", features });
   }
@@ -497,19 +421,18 @@ export default function Map(props: MapProps): React.JSX.Element {
     // day view
     if (activeIdx >= 0) {
       const day = trip.days[activeIdx];
-      const r = day ? trip.regions[day.base] : undefined;
+      const baseKey = day?.base;
+      const r = baseKey ? trip.regions[baseKey] : undefined;
       if (!day || !r) return;
-      const b = boundsOf([
-        [r.lng, r.lat],
-        [day.lng, day.lat],
-      ]);
-      const cam = map.cameraForBounds(b, { padding: pad, maxZoom: 14 });
-      const zoom = cam && cam.zoom !== undefined ? cam.zoom : 0;
-      if (zoom >= 11) {
-        map.fitBounds(b, { padding: pad, maxZoom: 14, duration: 780 });
-      } else {
-        map.flyTo({ center: [day.lng, day.lat], zoom: 12.5, duration: 780 });
-      }
+      const pts: LngLat[] = [[r.lng, r.lat]];
+      trip.days.forEach((d) => {
+        if (d.base === baseKey && !d.outlier) pts.push([d.lng, d.lat]);
+      });
+      map.fitBounds(boundsOf(pts), {
+        padding: { top: Math.max(pad, 170), right: pad, bottom: pad, left: pad },
+        maxZoom: 10.5,
+        duration: 780,
+      });
       return;
     }
 

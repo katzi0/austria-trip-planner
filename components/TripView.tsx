@@ -49,6 +49,7 @@ export default function TripView({ trip }: TripViewProps) {
   const [activeIdx, setActiveIdx] = useState<number>(-1);
   const [panelOpen, setPanelOpen] = useState<boolean>(false);
   const [typeMenuOpen, setTypeMenuOpen] = useState<boolean>(false);
+  const [ribbonOpen, setRibbonOpen] = useState<boolean>(false);
   const [curPairing, setCurPairing] = useState<Pairing>("alpine");
   const [hydrated, setHydrated] = useState<boolean>(false);
 
@@ -194,6 +195,10 @@ export default function TripView({ trip }: TripViewProps) {
     setTypeMenuOpen((v) => !v);
   }, []);
 
+  const onRibbonToggle = useCallback(() => {
+    setRibbonOpen((v) => !v);
+  }, []);
+
   // Print: render the print div (always rendered, hidden by CSS) and call print.
   const onPrintClick = useCallback(() => {
     window.print();
@@ -289,13 +294,22 @@ export default function TripView({ trip }: TripViewProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh" }}>
-      <div className="mapwrap" style={{ flex: "1 1 auto", position: "relative" }}>
+      <div
+        style={{
+          flex: "1 1 auto",
+          position: "relative",
+          display: "flex",
+          minHeight: 0,
+        }}
+      >
         <Ribbon
           trip={trip}
           viewMode={viewMode}
           dayScope={dayScope}
           activeIdx={activeIdx}
           currentRegion={currentRegion}
+          open={ribbonOpen}
+          onToggle={onRibbonToggle}
           onAreaClick={onAreaClick}
           onDayClick={onDayClick}
           onOverviewClick={onOverviewClick}

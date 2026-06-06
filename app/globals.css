@@ -41,9 +41,15 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .menu-pop button.on{color:var(--brand2);font-weight:700}
 
 /* journey ribbon */
+.ribbon-toggle{position:absolute;top:12px;inset-inline-end:14px;z-index:700;width:38px;height:38px;border-radius:10px;
+  background:var(--paper2);border:1px solid var(--line);color:var(--ink2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 2px 8px rgba(22,38,30,.14);transition:background .15s,border-color .15s,color .15s}
+.ribbon-toggle:hover{border-color:var(--line2);color:var(--ink)}
+.ribbon-toggle.open{background:var(--brand);border-color:var(--brand);color:#fff}
 .journey{position:absolute;top:0;inset-inline:0;z-index:600;display:flex;align-items:flex-start;gap:10px;
-  background:transparent;border:none;padding:12px 16px;pointer-events:none;
-  filter:drop-shadow(0 4px 12px rgba(22,38,30,.18))}
+  background:transparent;border:none;padding-block:12px;padding-inline-start:16px;padding-inline-end:64px;
+  pointer-events:none;filter:drop-shadow(0 4px 12px rgba(22,38,30,.18))}
+.journey.closed{display:none}
 .journey>*{pointer-events:auto}
 .maptools{flex:0 0 auto;display:flex;align-items:center;gap:8px}
 .overview-btn{flex:0 0 auto;width:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -102,13 +108,16 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .pnl-x{margin-inline-start:auto;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.16);border:none;color:#fff;font-size:19px;line-height:1;cursor:pointer}
 .pnl-x:hover{background:rgba(255,255,255,.28)}
 .pnl-body{padding:17px 18px 32px}
-.pnl-title{font-family:var(--serif);font-size:23px;line-height:1.2;font-weight:700;color:var(--ink)}
-.pnl-area{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.pnl-area{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
 .pnl-area svg{stroke:var(--dcc)}
 .pnl-facts{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 2px}
 .pnl-sec{margin-top:16px;border-top:1px solid var(--line);padding-top:13px}
 .pnl-sec h4{font-size:11px;letter-spacing:.06em;color:var(--faint);font-weight:700;margin-bottom:7px}
-.pnl-acts{margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--ink2);line-height:1.45}
+.pnl-acts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.pnl-acts li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink2);line-height:1.45}
+.pnl-step{flex:0 0 auto;width:22px;height:22px;border-radius:7px;background:var(--dcc);color:#fff;
+  font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-family:var(--sans)}
+.pnl-step-text{flex:1;padding-top:2px}
 .pnl-sec p{font-size:14px;color:var(--ink2);line-height:1.6;margin:0}
 .pnl-sec .planb,.pnl-sec .overnote{margin-top:0}
 
@@ -122,7 +131,7 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .minipop:hover .mp-go{color:var(--ink)}
 
 /* pins */
-.pinwrap{cursor:pointer}
+.pinwrap{cursor:pointer;position:relative}
 .pin{width:34px;height:34px;border-radius:50% 50% 50% 3px;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;
   border:2.5px solid #fff;box-shadow:0 2px 6px rgba(22,38,30,.3);transition:transform .16s,filter .2s,opacity .2s}
 .pin>span{transform:rotate(-45deg);color:#fff;display:flex;align-items:center;justify-content:center}
@@ -131,11 +140,28 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 @keyframes settle{0%{transform:rotate(45deg) scale(1.55)}60%{transform:rotate(45deg) scale(1.24)}100%{transform:rotate(45deg) scale(1.32)}}
 .pin.dim{filter:grayscale(1);opacity:.4}
 .pin.dim2{opacity:.5}
+.pinlabel{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);
+  background:#fff;color:var(--ink);line-height:1.25;text-align:center;
+  padding:7px 12px;border-radius:10px;border:1px solid var(--line);box-shadow:0 3px 9px rgba(22,38,30,.16);
+  pointer-events:none;opacity:0;transition:opacity .18s;
+  width:max-content;max-width:240px;text-wrap:balance}
+.pinlabel .pl-head{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--ink);white-space:normal;word-break:break-word}
+.pinlabel .pl-sub{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px;white-space:nowrap}
+.pinwrap:hover .pinlabel{opacity:1;z-index:4}
+.pin.active ~ .pinlabel{opacity:1;background:#fff;box-shadow:0 5px 14px rgba(22,38,30,.24);z-index:3;border-color:var(--line2)}
+.hotelwrap{position:relative;cursor:pointer;width:30px;height:30px}
 .hotel{width:30px;height:30px;border-radius:8px 8px 8px 3px;background:#fff;border:2px solid var(--hc);color:var(--hc);
-  display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(22,38,30,.26);cursor:pointer;transition:.2s}
-.hotel.cur{box-shadow:0 0 0 5px color-mix(in srgb,var(--hc) 22%,transparent),0 2px 6px rgba(22,38,30,.3)}
-.hotel.dim{filter:grayscale(1);opacity:.4}
-.hotel.dim2{opacity:.55}
+  display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(22,38,30,.26);transition:.2s}
+.hotelwrap.cur .hotel{box-shadow:0 0 0 5px color-mix(in srgb,var(--hc) 22%,transparent),0 2px 6px rgba(22,38,30,.3)}
+.hotelwrap.dim .hotel{filter:grayscale(1);opacity:.4}
+.hotelwrap.dim2 .hotel{opacity:.55}
+.hotellabel{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.96);color:var(--ink);font-size:11.5px;font-weight:700;line-height:1.2;
+  padding:3px 8px;border-radius:7px;border:1.5px solid var(--hc);
+  box-shadow:0 2px 6px rgba(22,38,30,.16);white-space:nowrap;pointer-events:none;
+  max-width:200px;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .18s}
+.hotelwrap:hover .hotellabel{opacity:1;z-index:4}
+.hotelwrap.cur .hotellabel{opacity:1;background:#fff;box-shadow:0 3px 10px rgba(22,38,30,.22);z-index:3}
 
 /* day strip */
 .stripwrap{background:var(--paper2);border-top:1px solid var(--line);padding:11px 26px 14px}
