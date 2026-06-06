@@ -509,6 +509,7 @@ export default function TripView({
         activeIdx={activeIdx}
         open={panelOpen}
         onClose={closePanel}
+        slug={slug}
       />
       {!isPhone && (
         <TimelinePanel

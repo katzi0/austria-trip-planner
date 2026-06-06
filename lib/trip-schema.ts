@@ -4,6 +4,7 @@ export const ActivitySchema = z.object({
   name: z.string(),
   lat: z.number().optional(),   // filled by the AI coordinate step; optional
   lng: z.number().optional(),
+  legMin: z.number().optional(), // driving minutes from the previous stop (day pin for the first act); server-derived
 });
 
 // Accept legacy plain-string bullets too, normalizing them to { name }.
