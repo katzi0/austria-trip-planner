@@ -16,6 +16,7 @@ export const ICON_PATHS: Record<string, string> = {
   church: '<path d="M12 2v4M10 4h4"/><path d="M6 21V11l6-4 6 4v10M10 21v-5h4v5"/>',
   plane: '<path d="M21 15.5 13 11V4.5a1.5 1.5 0 0 0-3 0V11l-8 4.5V17l8-2v3l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-3l8 2z"/>',
   car: '<path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm18 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM3 17v-5l2-5h10l3 5h1a2 2 0 0 1 2 2v3"/>',
+  suitcase: '<rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>',
   bed: '<path d="M3 18V8m0 6h18m0 4v-6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2"/>',
   moon: '<path d="M20 14a8 8 0 1 1-9-11 6 6 0 0 0 9 11Z"/>',
   rain: '<path d="M7 16a4 4 0 0 1-1-7.9 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 18 16"/><path d="m8 19-1 2M12 19l-1 2M16 19l-1 2"/>',

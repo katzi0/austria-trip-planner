@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Trip } from "@/lib/trip-schema";
 import { nightsOfBase, baseDateRange } from "@/lib/trip-utils";
 import { Icon, Lat } from "./icons";
@@ -22,6 +22,9 @@ export interface RibbonProps {
   todayLabel: string;
   todayPulse?: boolean;
   typeMenuChildren?: ReactNode;
+  tripList: { slug: string; label: string }[];
+  activeSlug: string;
+  onSwitchTrip: (slug: string) => void;
 }
 
 export default function Ribbon({
@@ -41,8 +44,72 @@ export default function Ribbon({
   todayLabel,
   todayPulse = true,
   typeMenuChildren,
+  tripList,
+  activeSlug,
+  onSwitchTrip,
 }: RibbonProps) {
   const ribbonRef = useRef<HTMLDivElement>(null);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+
+  function highlight(text: string, query: string): ReactNode {
+    const q = query.trim();
+    if (!q) return text;
+    const lower = text.toLowerCase();
+    const needle = q.toLowerCase();
+    const parts: ReactNode[] = [];
+    let i = 0;
+    let k = 0;
+    while (i < text.length) {
+      const found = lower.indexOf(needle, i);
+      if (found === -1) {
+        parts.push(<Fragment key={k++}>{text.slice(i)}</Fragment>);
+        break;
+      }
+      if (found > i) parts.push(<Fragment key={k++}>{text.slice(i, found)}</Fragment>);
+      parts.push(<mark key={k++}>{text.slice(found, found + needle.length)}</mark>);
+      i = found + needle.length;
+    }
+    return parts;
+  }
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    const out: { idx: number; snippet: string }[] = [];
+    trip.days.forEach((d, idx) => {
+      const region = trip.regions[d.base];
+      const fields: string[] = [
+        d.title,
+        ...d.acts,
+        d.food,
+        d.tips,
+        d.rain,
+        d.drive,
+        d.cardLabel,
+        region?.name ?? "",
+      ];
+      for (const text of fields) {
+        if (text && text.toLowerCase().includes(q)) {
+          out.push({ idx, snippet: text });
+          break;
+        }
+      }
+    });
+    return out;
+  }, [searchQuery, trip]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (!searchBoxRef.current?.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [searchOpen]);
 
   useEffect(() => {
     const rb = ribbonRef.current;
@@ -126,6 +193,11 @@ export default function Ribbon({
                   <div className="lg-top">
                     <span className="step">{idx + 1}</span>
                     <span className="lg-name">{r.name}</span>
+                    {k.startsWith("transfer-") && (
+                      <span className="lg-tran-ico">
+                        <Icon name={r.icon} size={14} />
+                      </span>
+                    )}
                   </div>
                   <div className="lg-meta">
                     <Lat>{baseDateRange(trip, k)}</Lat>
@@ -168,6 +240,64 @@ export default function Ribbon({
       </div>
 
       <div className="maptools">
+        <div className="search-box" ref={searchBoxRef}>
+          <input
+            type="search"
+            className="search-input"
+            value={searchQuery}
+            placeholder="חיפוש פעילות…"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => setSearchOpen(true)}
+          />
+          {searchOpen && searchQuery.trim().length >= 2 && (
+            <div className="search-results" role="listbox">
+              {searchResults.length === 0 ? (
+                <div className="search-empty">אין תוצאות</div>
+              ) : (
+                searchResults.map((r) => {
+                  const day = trip.days[r.idx];
+                  return (
+                    <button
+                      key={`${r.idx}-${r.snippet}`}
+                      role="option"
+                      className="search-item"
+                      onClick={() => {
+                        onDayClick(r.idx);
+                        setSearchQuery("");
+                        setSearchOpen(false);
+                      }}
+                    >
+                      <span className="search-day" style={{ color: day.color }}>
+                        יום {day.n} · <Lat>{day.d}</Lat>
+                      </span>
+                      <span className="search-snippet">
+                        {highlight(r.snippet, searchQuery)}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+        {tripList.length > 1 && (
+          <div className="trip-switch" role="tablist" aria-label="בחירת טיול">
+            {tripList.map((t) => (
+              <button
+                key={t.slug}
+                role="tab"
+                aria-selected={t.slug === activeSlug}
+                className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
+                onClick={() => onSwitchTrip(t.slug)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
         <span className="today-pill" id="todayPill">
           <span
             className="dot"

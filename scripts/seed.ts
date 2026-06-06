@@ -1,10 +1,12 @@
 import { ensureSchema, writeTrip } from "../lib/db";
-import { SEED_TRIP } from "../lib/seed";
+import { TRIPS } from "../lib/trips";
 
 async function main(): Promise<void> {
   await ensureSchema();
-  await writeTrip("austria-2026", SEED_TRIP);
-  console.log("seeded ✓");
+  for (const t of TRIPS) {
+    await writeTrip(t.slug, t.seed);
+    console.log(`seeded ${t.slug} ✓`);
+  }
 }
 
 await main();

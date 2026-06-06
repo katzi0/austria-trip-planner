@@ -75,18 +75,38 @@ function makePinElement(
   return wrap;
 }
 
-function makeHotelElement(r: Region): HTMLDivElement {
+function makeHotelElement(
+  key: string,
+  r: Region,
+  transferNum?: number,
+): HTMLDivElement {
   const wrap = document.createElement("div");
   wrap.className = "hotelwrap";
   wrap.style.setProperty("--hc", r.hex);
-  wrap.title = r.hotel;
+  wrap.title = r.town ? `${r.hotel} · ${r.town}` : r.hotel;
   const icon = document.createElement("div");
   icon.className = "hotel";
-  icon.innerHTML = iconSvg("bed", 15);
+  const pinIcon = key.startsWith("transfer-") ? "suitcase" : "bed";
+  icon.innerHTML = iconSvg(pinIcon, 15);
+  if (transferNum !== undefined) {
+    const badge = document.createElement("div");
+    badge.className = "hotel-num";
+    badge.textContent = String(transferNum);
+    icon.appendChild(badge);
+  }
   wrap.appendChild(icon);
   const label = document.createElement("div");
   label.className = "hotellabel";
-  label.textContent = r.hotel;
+  const name = document.createElement("div");
+  name.className = "hotellabel-name";
+  name.textContent = r.hotel;
+  label.appendChild(name);
+  if (r.town) {
+    const town = document.createElement("div");
+    town.className = "hotellabel-town";
+    town.textContent = r.town;
+    label.appendChild(town);
+  }
   wrap.appendChild(label);
   return wrap;
 }
@@ -147,7 +167,7 @@ export default function Map(props: MapProps): React.JSX.Element {
         paint: {
           "line-color": ["coalesce", ["get", "color"], "#888"],
           "line-width": 4.5,
-          "line-opacity": 0.95,
+          "line-opacity": 1,
         },
       });
       // Base hotel→day dashed routes
@@ -160,7 +180,7 @@ export default function Map(props: MapProps): React.JSX.Element {
         paint: {
           "line-color": ["coalesce", ["get", "color"], "#888"],
           "line-width": 3,
-          "line-opacity": 0.78,
+          "line-opacity": 1,
         },
       });
       map.resize();
@@ -247,8 +267,16 @@ export default function Map(props: MapProps): React.JSX.Element {
       dayMarkersRef.current.push(marker);
     });
 
+    const transferNums: Record<string, number> = {};
+    let tCount = 0;
+    trip.baseOrder.forEach((bk) => {
+      if (bk.startsWith("transfer-")) {
+        tCount += 1;
+        transferNums[bk] = tCount;
+      }
+    });
     Object.entries(trip.regions).forEach(([key, r]) => {
-      const el = makeHotelElement(r);
+      const el = makeHotelElement(key, r, transferNums[key]);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         cbRef.current.onHotelClick(key);
@@ -288,8 +316,9 @@ export default function Map(props: MapProps): React.JSX.Element {
       pin.classList.remove("dim", "dim2", "active");
       if (viewMode !== "area") {
         const inScope = dayScope === "all" || day.base === dayScope;
+        const focusedArea = dayScope !== "all";
         if (!inScope) pin.classList.add("dim");
-        else if (i !== activeIdx) pin.classList.add("dim2");
+        else if (i !== activeIdx && !focusedArea) pin.classList.add("dim2");
         if (i === activeIdx) pin.classList.add("active");
       }
     });
@@ -298,8 +327,10 @@ export default function Map(props: MapProps): React.JSX.Element {
       el.classList.remove("dim", "dim2", "cur");
       if (viewMode === "day") {
         if (dayScope !== "all" && key !== dayScope) el.classList.add("dim2");
-        if (activeIdx >= 0 && trip.days[activeIdx] && trip.days[activeIdx].base === key)
-          el.classList.add("cur");
+        const dayInRegion =
+          activeIdx >= 0 && trip.days[activeIdx] && trip.days[activeIdx].base === key;
+        const scopedToRegion = dayScope !== "all" && key === dayScope;
+        if (dayInRegion || scopedToRegion) el.classList.add("cur");
       }
     });
   }

@@ -21,6 +21,10 @@ const PAIRINGS: ReadonlyArray<[Pairing, string]> = [
 
 export interface TripViewProps {
   trip: Trip;
+  slug: string;
+  tripList: { slug: string; label: string }[];
+  activeSlug: string;
+  onSwitchTrip: (slug: string) => void;
 }
 
 function computeTodayLabel(trip: Trip, now = new Date()): { label: string; pulse: boolean } {
@@ -42,7 +46,16 @@ function computeTodayLabel(trip: Trip, now = new Date()): { label: string; pulse
   return { label: "בדרך", pulse: true };
 }
 
-export default function TripView({ trip }: TripViewProps) {
+export default function TripView({
+  trip,
+  slug,
+  tripList,
+  activeSlug,
+  onSwitchTrip,
+}: TripViewProps) {
+  const viewKey = `austria_view_${slug}`;
+  const typeKey = `austria_type_${slug}`;
+  const tripLabel = tripList.find((t) => t.slug === slug)?.label;
   // SSR-safe initial state — read storage and today after mount.
   const [viewMode, setViewMode] = useState<ViewMode>("area");
   const [dayScope, setDayScope] = useState<string>("all");
@@ -63,11 +76,15 @@ export default function TripView({ trip }: TripViewProps) {
   // On mount: read localStorage + decide landing mode.
   useEffect(() => {
     const storedView = (typeof window !== "undefined"
-      ? localStorage.getItem("austria_view")
+      ? localStorage.getItem(viewKey)
       : null) as ViewMode | null;
     const storedType = (typeof window !== "undefined"
-      ? localStorage.getItem("austria_type")
+      ? localStorage.getItem(typeKey)
       : null) as Pairing | null;
+
+    if (tripLabel && typeof document !== "undefined") {
+      document.title = tripLabel;
+    }
 
     if (storedType && PAIRINGS.some(([id]) => id === storedType)) {
       setCurPairing(storedType);
@@ -87,29 +104,29 @@ export default function TripView({ trip }: TripViewProps) {
       setCurrentRegion("all");
     }
     setHydrated(true);
-  }, [trip]);
+  }, [trip, viewKey, typeKey, tripLabel]);
 
   // Persist viewMode.
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem("austria_view", viewMode);
+      localStorage.setItem(viewKey, viewMode);
     } catch {
       /* noop */
     }
-  }, [viewMode, hydrated]);
+  }, [viewMode, hydrated, viewKey]);
 
   // Apply typography pairing class on <html>.
   useEffect(() => {
     document.documentElement.className = "type-" + curPairing;
     if (hydrated) {
       try {
-        localStorage.setItem("austria_type", curPairing);
+        localStorage.setItem(typeKey, curPairing);
       } catch {
         /* noop */
       }
     }
-  }, [curPairing, hydrated]);
+  }, [curPairing, hydrated, typeKey]);
 
   // Close type menu on outside click.
   useEffect(() => {
@@ -337,6 +354,9 @@ export default function TripView({ trip }: TripViewProps) {
           todayLabel={todayLabel}
           todayPulse={todayPulse}
           typeMenuChildren={typeMenu}
+          tripList={tripList}
+          activeSlug={activeSlug}
+          onSwitchTrip={onSwitchTrip}
         />
         <Map
           trip={trip}

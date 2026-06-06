@@ -52,6 +52,26 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .journey.closed{display:none}
 .journey>*{pointer-events:auto}
 .maptools{flex:0 0 auto;display:flex;align-items:center;gap:8px}
+.trip-switch{display:inline-flex;background:var(--paper2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.trip-switch-pill{background:transparent;border:none;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--ink2);white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.trip-switch-pill:hover{color:var(--ink)}
+.trip-switch-pill.on{background:var(--brand);color:#fff}
+.search-box{position:relative}
+.search-input{width:180px;height:34px;border-radius:10px;background:var(--paper2);border:1px solid var(--line);
+  padding:0 12px;font-size:13px;color:var(--ink2);outline:none;transition:border-color .15s,color .15s,width .2s}
+.search-input::placeholder{color:var(--muted)}
+.search-input:focus{border-color:var(--brand);color:var(--ink);width:240px}
+.search-results{position:absolute;top:40px;inset-inline-end:0;background:var(--paper2);border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 14px 34px rgba(22,38,30,.2);padding:6px;z-index:700;
+  min-width:260px;max-width:360px;max-height:380px;overflow-y:auto}
+.search-empty{padding:10px 12px;font-size:13px;color:var(--muted);text-align:center}
+.search-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;
+  background:none;border:none;padding:8px 10px;border-radius:8px;text-align:start;cursor:pointer}
+.search-item:hover{background:var(--paper3)}
+.search-day{font-size:11px;font-weight:700;letter-spacing:.02em}
+.search-snippet{font-size:13px;color:var(--ink);line-height:1.35}
+.search-snippet mark{background:color-mix(in srgb,var(--brand) 30%,transparent);color:inherit;
+  padding:0 2px;border-radius:3px;font-weight:700}
 .overview-btn{flex:0 0 auto;width:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   background:var(--paper2);border:1px solid var(--line);border-radius:12px;color:var(--ink2);font-size:11px;font-weight:600;padding:6px 4px}
 .overview-btn:hover{border-color:var(--line2);color:var(--ink)}
@@ -66,6 +86,7 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .leg .step{width:22px;height:22px;border-radius:7px;background:var(--lc);color:#fff;font-size:12px;font-weight:700;
   display:inline-flex;align-items:center;justify-content:center;font-family:var(--sans)}
 .leg .lg-top{display:flex;align-items:center;gap:8px}
+.leg .lg-tran-ico{margin-inline-start:auto;color:var(--lc);display:flex;align-items:center}
 .leg .lg-name{font-family:var(--serif);font-weight:700;font-size:14.5px;color:var(--ink)}
 .leg .lg-meta{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);margin-top:3px}
 .leg .lg-meta .nights{display:inline-flex;align-items:center;gap:3px}
@@ -189,6 +210,11 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .hotelwrap.cur .hotel{box-shadow:0 0 0 5px color-mix(in srgb,var(--hc) 22%,transparent),0 2px 6px rgba(22,38,30,.3)}
 .hotelwrap.dim .hotel{filter:grayscale(1);opacity:.4}
 .hotelwrap.dim2 .hotel{opacity:.55}
+.hotel{position:relative}
+.hotel-num{position:absolute;top:-7px;inset-inline-end:-7px;min-width:17px;height:17px;padding:0 4px;
+  border-radius:999px;background:var(--hc);color:#fff;font-size:10.5px;font-weight:700;line-height:1;
+  display:flex;align-items:center;justify-content:center;border:2px solid #fff;
+  box-shadow:0 1px 3px rgba(22,38,30,.25);font-family:var(--sans)}
 .hotellabel{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);
   background:rgba(255,255,255,.96);color:var(--ink);font-size:11.5px;font-weight:700;line-height:1.2;
   padding:3px 8px;border-radius:7px;border:1.5px solid var(--hc);
@@ -196,6 +222,8 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
   max-width:200px;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .18s}
 .hotelwrap:hover .hotellabel{opacity:1;z-index:4}
 .hotelwrap.cur .hotellabel{opacity:1;background:#fff;box-shadow:0 3px 10px rgba(22,38,30,.22);z-index:3}
+.hotellabel-name{font-size:11.5px;font-weight:700;color:var(--ink)}
+.hotellabel-town{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:1px}
 
 /* day strip */
 .stripwrap{background:var(--paper2);border-top:1px solid var(--line);padding:11px 26px 14px}

@@ -5,6 +5,7 @@ export const RegionSchema = z.object({
   short: z.string(),
   hex: z.string(),
   hotel: z.string(),
+  town: z.string().optional(),
   lat: z.number(),
   lng: z.number(),
   icon: z.string(),

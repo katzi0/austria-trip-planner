@@ -3,13 +3,13 @@ import type { Trip } from "./trip-schema";
 export const SEED_TRIP: Trip = {
   baseOrder: ["moxy", "transfer-traunfall", "wagrain", "transfer-rittisberg", "ramsau", "transfer-linz", "henriette"],
   regions: {
-    moxy: { name: "וינה · הגעה", short: "מוקסי", hex: "#C0851F", hotel: "Moxy (מוקסי)", lat: 48.2169, lng: 16.3989, icon: "ferris" },
-    "transfer-traunfall": { name: "מעבר · Traunfall + Grünberg", short: "מעבר", hex: "#7B8C7A", hotel: "Alpina Wagrain", lat: 48.0573, lng: 13.8512, icon: "car" },
-    wagrain: { name: "ואגריין", short: "ואגריין", hex: "#1F86AE", hotel: "Alpina Wagrain", lat: 47.3339, lng: 13.2986, icon: "cablecar" },
-    "transfer-rittisberg": { name: "מעבר · Rittisberg", short: "מעבר", hex: "#7B8C7A", hotel: "Landhaus Birgbichler", lat: 47.4130, lng: 13.6590, icon: "car" },
-    ramsau: { name: "רמסאו", short: "רמסאו", hex: "#8B45AD", hotel: "Landhaus Birgbichler", lat: 47.4156, lng: 13.6469, icon: "peak" },
-    "transfer-linz": { name: "מעבר · Ars Electronica (לינץ)", short: "מעבר", hex: "#7B8C7A", hotel: "Henriette", lat: 48.3100, lng: 14.2840, icon: "car" },
-    henriette: { name: "וינה · סיום", short: "וינה", hex: "#4C9438", hotel: "Henriette", lat: 48.2197, lng: 16.3760, icon: "palace" },
+    moxy: { name: "וינה · הגעה", short: "מוקסי", hex: "#C0851F", hotel: "Moxy (מוקסי)", town: "וינה", lat: 48.2169, lng: 16.3989, icon: "ferris" },
+    "transfer-traunfall": { name: "מעבר · Traunfall + Grünberg", short: "מעבר", hex: "#7B8C7A", hotel: "Alpina Wagrain", town: "ואגריין", lat: 48.0573, lng: 13.8512, icon: "suitcase" },
+    wagrain: { name: "ואגריין", short: "ואגריין", hex: "#1F86AE", hotel: "Alpina Wagrain", town: "ואגריין", lat: 47.3339, lng: 13.2986, icon: "cablecar" },
+    "transfer-rittisberg": { name: "מעבר · Rittisberg", short: "מעבר", hex: "#7B8C7A", hotel: "Landhaus Birgbichler", town: "רמסאו", lat: 47.4130, lng: 13.6590, icon: "suitcase" },
+    ramsau: { name: "רמסאו", short: "רמסאו", hex: "#8B45AD", hotel: "Landhaus Birgbichler", town: "רמסאו", lat: 47.4156, lng: 13.6469, icon: "peak" },
+    "transfer-linz": { name: "מעבר · Ars Electronica (לינץ)", short: "מעבר", hex: "#7B8C7A", hotel: "Henriette", town: "וינה", lat: 48.3100, lng: 14.2840, icon: "suitcase" },
+    henriette: { name: "וינה · סיום", short: "וינה", hex: "#4C9438", hotel: "Henriette", town: "וינה", lat: 48.2197, lng: 16.3760, icon: "palace" },
   },
   days: [
     { n: 1, d: "14.7", dow: "שלישי", base: "moxy", color: "#C0851F", intensity: 2, icon: "ferris", lat: 48.2169, lng: 16.3989,

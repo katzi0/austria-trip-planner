@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Trip, Day, Region } from "@/lib/trip-schema";
+import { TRIPS, DEFAULT_SLUG, isKnownSlug } from "@/lib/trips";
 
 const ICON_OPTIONS = [
   "ferris",
@@ -65,17 +66,32 @@ function newRegionKey(existing: string[]): string {
   return `region${i}`;
 }
 
+function initialSlug(): string {
+  if (typeof window === "undefined") return DEFAULT_SLUG;
+  const q = new URLSearchParams(window.location.search).get("slug");
+  return q && isKnownSlug(q) ? q : DEFAULT_SLUG;
+}
+
 export default function EditPage() {
   const [passphrase, setPassphrase] = useState("");
+  const [editSlug, setEditSlug] = useState<string>(DEFAULT_SLUG);
   const [trip, setTrip] = useState<Trip | null>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   useEffect(() => {
+    setEditSlug(initialSlug());
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
+    setTrip(null);
+    setLoadErr(null);
     (async () => {
       try {
-        const res = await fetch("/api/trip", { cache: "no-store" });
+        const res = await fetch(`/api/trip?slug=${encodeURIComponent(editSlug)}`, {
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as Trip;
         if (!cancelled) setTrip(data);
@@ -86,7 +102,7 @@ export default function EditPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [editSlug]);
 
   function updateTrip(mut: (t: Trip) => Trip) {
     setTrip((prev) => (prev ? mut(structuredClone(prev)) : prev));
@@ -157,7 +173,7 @@ export default function EditPage() {
       const res = await fetch("/api/trip", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passphrase, trip }),
+        body: JSON.stringify({ passphrase, trip, slug: editSlug }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; ok?: boolean };
       if (!res.ok) {
@@ -196,6 +212,18 @@ export default function EditPage() {
 
       <div className="edit-card">
         <div className="edit-row">
+          <div className="edit-field" style={{ minWidth: 200 }}>
+            <label htmlFor="trip-select">טיול</label>
+            <select
+              id="trip-select"
+              value={editSlug}
+              onChange={(e) => setEditSlug(e.target.value)}
+            >
+              {TRIPS.map((t) => (
+                <option key={t.slug} value={t.slug}>{t.label}</option>
+              ))}
+            </select>
+          </div>
           <div className="edit-field" style={{ flex: 1, minWidth: 240 }}>
             <label htmlFor="passphrase">סיסמת עריכה</label>
             <input
@@ -251,6 +279,19 @@ export default function EditPage() {
                     type="text"
                     value={r.hotel}
                     onChange={(e) => updateRegion(key, (x) => ({ ...x, hotel: e.target.value }))}
+                  />
+                </label>
+                <label className="edit-field">
+                  עיר
+                  <input
+                    type="text"
+                    value={r.town ?? ""}
+                    onChange={(e) =>
+                      updateRegion(key, (x) => ({
+                        ...x,
+                        town: e.target.value === "" ? undefined : e.target.value,
+                      }))
+                    }
                   />
                 </label>
                 <label className="edit-field">

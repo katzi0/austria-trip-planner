@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { Trip } from "./trip-schema";
 import { TripSchema } from "./trip-schema";
-import { SEED_TRIP } from "./seed";
+import { seedFor } from "./trips";
 
 function hasPostgres(): boolean {
   return Boolean(process.env.POSTGRES_URL && process.env.POSTGRES_URL.length > 0);
@@ -18,7 +18,7 @@ async function readLocal(slug: string): Promise<Trip> {
     const raw = await readFile(localPath(slug), "utf8");
     return TripSchema.parse(JSON.parse(raw));
   } catch {
-    return TripSchema.parse(SEED_TRIP);
+    return TripSchema.parse(seedFor(slug));
   }
 }
 
@@ -45,7 +45,7 @@ export async function readTrip(slug = "austria-2026"): Promise<Trip> {
   await ensureSchema();
   const result = await sql<{ data: unknown }>`SELECT data FROM trips WHERE slug = ${slug} LIMIT 1`;
   if (result.rows.length === 0) {
-    const seeded = TripSchema.parse(SEED_TRIP);
+    const seeded = TripSchema.parse(seedFor(slug));
     await sql`
       INSERT INTO trips (slug, data)
       VALUES (${slug}, ${JSON.stringify(seeded)}::jsonb)
