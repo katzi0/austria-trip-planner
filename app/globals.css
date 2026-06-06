@@ -56,8 +56,10 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 .trip-switch-pill{background:transparent;border:none;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--ink2);white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
 .trip-switch-pill:hover{color:var(--ink)}
 .trip-switch-pill.on{background:var(--brand);color:#fff}
-.float-stack{position:absolute;top:12px;left:12px;z-index:10;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
-.float-stack .trip-switch{box-shadow:0 4px 14px rgba(22,38,30,.18)}
+.phone-settings{position:absolute;top:12px;left:12px;z-index:10}
+.phone-settings-btn{width:38px;height:38px;border-radius:50%;background:var(--paper2);border:1px solid var(--line);color:var(--ink2);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(22,38,30,.18);transition:color .15s,background .15s}
+.phone-settings-btn:hover,.phone-settings-btn.on{color:var(--brand);background:var(--paper)}
+.phone-settings-pop{position:absolute;top:46px;left:0;display:flex;flex-direction:column;gap:8px;background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 12px 32px rgba(22,38,30,.22)}
 .tl-listwrap{flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--paper)}
 .search-box{position:relative}
 .search-input{width:180px;height:34px;border-radius:10px;background:var(--paper2);border:1px solid var(--line);

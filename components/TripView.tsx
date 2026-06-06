@@ -13,6 +13,7 @@ import TimelineList from "./TimelineList";
 import TimelinePanel from "./TimelinePanel";
 import PrintView from "./PrintView";
 import UploadDialog from "./UploadDialog";
+import { Icon } from "./icons";
 
 type PhoneView = "map" | "list";
 
@@ -78,6 +79,7 @@ export default function TripView({
   const [hydrated, setHydrated] = useState<boolean>(false);
   const [uploadOpen, setUploadOpen] = useState<boolean>(false);
   const [phoneView, setPhoneView] = useState<PhoneView>("map");
+  const [phoneMenuOpen, setPhoneMenuOpen] = useState<boolean>(false);
 
   const { label: todayLabel, pulse: todayPulse } = useMemo(
     () => computeTodayLabel(trip),
@@ -163,6 +165,14 @@ export default function TripView({
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, [typeMenuOpen]);
+
+  // Close phone settings menu on outside click.
+  useEffect(() => {
+    if (!phoneMenuOpen) return;
+    const onDocClick = () => setPhoneMenuOpen(false);
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [phoneMenuOpen]);
 
   const visible = useMemo(
     () => visibleDayIndexes(trip, dayScope),
@@ -411,48 +421,73 @@ export default function TripView({
           />
         )}
         {isPhone && (
-          <div className="float-stack">
-            {tripList.length > 1 && (
-              <div
-                className="trip-switch"
-                role="tablist"
-                aria-label="בחירת טיול"
-              >
-                {tripList.map((t) => (
-                  <button
-                    key={t.slug}
-                    role="tab"
-                    aria-selected={t.slug === activeSlug}
-                    className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
-                    onClick={() => onSwitchTrip(t.slug)}
+          <div
+            className="phone-settings"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className={`phone-settings-btn${phoneMenuOpen ? " on" : ""}`}
+              aria-label="הגדרות"
+              aria-expanded={phoneMenuOpen}
+              onClick={() => setPhoneMenuOpen((v) => !v)}
+            >
+              <Icon name="settings" size={18} />
+            </button>
+            {phoneMenuOpen && (
+              <div className="phone-settings-pop" role="menu">
+                {tripList.length > 1 && (
+                  <div
+                    className="trip-switch"
+                    role="tablist"
+                    aria-label="בחירת טיול"
                   >
-                    {t.label}
+                    {tripList.map((t) => (
+                      <button
+                        key={t.slug}
+                        role="tab"
+                        aria-selected={t.slug === activeSlug}
+                        className={`trip-switch-pill${t.slug === activeSlug ? " on" : ""}`}
+                        onClick={() => {
+                          onSwitchTrip(t.slug);
+                          setPhoneMenuOpen(false);
+                        }}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div
+                  className="trip-switch"
+                  role="tablist"
+                  aria-label="תצוגה"
+                >
+                  <button
+                    role="tab"
+                    aria-selected={phoneView === "map"}
+                    className={`trip-switch-pill${phoneView === "map" ? " on" : ""}`}
+                    onClick={() => {
+                      setPhoneView("map");
+                      setPhoneMenuOpen(false);
+                    }}
+                  >
+                    מפה
                   </button>
-                ))}
+                  <button
+                    role="tab"
+                    aria-selected={phoneView === "list"}
+                    className={`trip-switch-pill${phoneView === "list" ? " on" : ""}`}
+                    onClick={() => {
+                      setPhoneView("list");
+                      setPhoneMenuOpen(false);
+                    }}
+                  >
+                    רשימה
+                  </button>
+                </div>
               </div>
             )}
-            <div
-              className="trip-switch"
-              role="tablist"
-              aria-label="תצוגה"
-            >
-              <button
-                role="tab"
-                aria-selected={phoneView === "map"}
-                className={`trip-switch-pill${phoneView === "map" ? " on" : ""}`}
-                onClick={() => setPhoneView("map")}
-              >
-                מפה
-              </button>
-              <button
-                role="tab"
-                aria-selected={phoneView === "list"}
-                className={`trip-switch-pill${phoneView === "list" ? " on" : ""}`}
-                onClick={() => setPhoneView("list")}
-              >
-                רשימה
-              </button>
-            </div>
           </div>
         )}
       </div>
