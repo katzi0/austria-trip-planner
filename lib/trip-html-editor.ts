@@ -103,7 +103,9 @@ export function tripToEditorHtml(
 <header>
   <h1>${title}</h1>
   <span class="spacer"></span>
+  <span id="site-status" class="note"></span>
   <span id="status"></span>
+  <button class="btn" id="refresh-site">↻ טען מהאתר</button>
   <input id="save-pass" type="password" class="save-pass" placeholder="סיסמה" autocomplete="off" />
   <button class="btn" id="save-site">⬆ שמור לאתר</button>
   <button class="btn" id="download">⬇ הורד JSON</button>
@@ -111,6 +113,7 @@ export function tripToEditorHtml(
 <div class="wrap">
   <details class="guide-box" open>
     <summary>📖 איך עורכים את הטיול?</summary>
+    <p class="note">בעת הפתיחה נטענים אוטומטית הנתונים העדכניים מהאתר (אם יש אינטרנט), כך שתמיד עורכים את הגרסה הנוכחית. אפשר גם לרענן ידנית בכפתור "↻ טען מהאתר".</p>
     <ol class="guide">
       <li><b>ממלאים את הפרטים.</b> לכל <b>יום</b> — תאריך, כותרת ורשימת <b>פעילויות</b> (פשוט כותבים את שם הפעילות). לכל <b>אזור</b> — מלון, עיר ו<b>אטרקציות</b> (תיאור, טיפים, חניה, וסימון אם כלול בכרטיס הקיץ).</li>
       <li><b>את הקואורדינטות משאירים על 0.</b> שדות "קו רוחב/אורך" מסומנים <span class="tag">AI ימלא</span> — לא צריך למלא אותם ידנית.</li>
@@ -344,6 +347,31 @@ function loadData(data) {
   for (const dd of data.days) daysEl.appendChild(renderDay(dd));
 }
 loadData(DATA);
+
+// The embedded DATA is only a snapshot from export time. When online, load the
+// CURRENT trip from the live site so a file opened on another device / later still
+// shows all places. Falls back to the snapshot when offline.
+async function loadFromSite() {
+  const st = document.getElementById("site-status");
+  if (!API_BASE) { if (st) st.textContent = ""; return; }
+  if (st) st.textContent = "טוען נתונים עדכניים מהאתר…";
+  try {
+    const res = await fetch(API_BASE + "/api/trip?slug=" + encodeURIComponent(SLUG), { cache: "no-store" });
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    if (data && Array.isArray(data.baseOrder) && data.regions && Array.isArray(data.days)) {
+      loadData(data);
+      if (st) st.textContent = "עודכן מהאתר ✓";
+    } else if (st) st.textContent = "";
+  } catch (e) {
+    if (st) st.textContent = "לא מקוון — מוצגים נתונים מקומיים";
+  }
+  if (st) setTimeout(() => { st.textContent = ""; }, 6000);
+}
+const refreshBtn = document.getElementById("refresh-site");
+if (!API_BASE) refreshBtn.style.display = "none";
+refreshBtn.onclick = () => loadFromSite();
+loadFromSite();
 
 document.getElementById("add-base").onclick = () => {
   const key = prompt("מפתח לבסיס החדש (אנגלית, ללא רווחים):", "base" + (baseKeys().length + 1));
