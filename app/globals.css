@@ -332,15 +332,9 @@ button{font-family:inherit;letter-spacing:inherit;cursor:pointer}
 }
 
 @media(max-width:720px){
-  .masthead{padding:11px 16px 10px}
-  .mh-id h1{font-size:24px}
-  .journey{padding:10px 16px 12px}
   .stripwrap{padding:10px 14px 14px}
-  .leg{min-width:128px}
-  .iconbtn,.toggle button,.stepper button{min-height:38px}
-  .overview-btn{min-height:44px}
-  .panel{display:none}
-  .tlpanel{width:100vw}
+  .toggle button,.stepper button{min-height:38px}
+  .maplibregl-ctrl-bottom-left{bottom:160px}
 }
 
 .maplibregl-canvas:focus{outline:none}

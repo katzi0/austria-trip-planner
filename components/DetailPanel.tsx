@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Trip } from "@/lib/trip-schema";
 import { BUSY } from "@/lib/trip-schema";
+import { useIsPhone } from "@/lib/use-is-phone";
 import { Icon, Lat } from "./icons";
 
 export interface DetailPanelProps {
@@ -25,18 +26,6 @@ function Ridge({ intensity }: { intensity: number }) {
       ))}
     </span>
   );
-}
-
-function useIsPhone(): boolean {
-  const [isPhone, setIsPhone] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width:720px)");
-    const apply = () => setIsPhone(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-  return isPhone;
 }
 
 export default function DetailPanel({

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Trip } from "@/lib/trip-schema";
 import { dateOf, todayIndex, visibleDayIndexes } from "@/lib/trip-utils";
+import { useIsPhone } from "@/lib/use-is-phone";
 import Map from "./Map";
 import Ribbon from "./Ribbon";
 import DayStrip from "./DayStrip";
@@ -56,6 +57,7 @@ export default function TripView({
   onSwitchTrip,
 }: TripViewProps) {
   const router = useRouter();
+  const isPhone = useIsPhone();
   const viewKey = `austria_view_${slug}`;
   const typeKey = `austria_type_${slug}`;
   const tripLabel = tripList.find((t) => t.slug === slug)?.label;
@@ -345,28 +347,30 @@ export default function TripView({
           minHeight: 0,
         }}
       >
-        <Ribbon
-          trip={trip}
-          viewMode={viewMode}
-          dayScope={dayScope}
-          activeIdx={activeIdx}
-          currentRegion={currentRegion}
-          open={ribbonOpen}
-          onToggle={onRibbonToggle}
-          onAreaClick={onAreaClick}
-          onDayClick={onDayClick}
-          onOverviewClick={onOverviewClick}
-          onTypeOpen={onTypeOpen}
-          onPrintClick={onPrintClick}
-          onTimelineClick={onTimelineClick}
-          onUploadClick={onUploadClick}
-          todayLabel={todayLabel}
-          todayPulse={todayPulse}
-          typeMenuChildren={typeMenu}
-          tripList={tripList}
-          activeSlug={activeSlug}
-          onSwitchTrip={onSwitchTrip}
-        />
+        {!isPhone && (
+          <Ribbon
+            trip={trip}
+            viewMode={viewMode}
+            dayScope={dayScope}
+            activeIdx={activeIdx}
+            currentRegion={currentRegion}
+            open={ribbonOpen}
+            onToggle={onRibbonToggle}
+            onAreaClick={onAreaClick}
+            onDayClick={onDayClick}
+            onOverviewClick={onOverviewClick}
+            onTypeOpen={onTypeOpen}
+            onPrintClick={onPrintClick}
+            onTimelineClick={onTimelineClick}
+            onUploadClick={onUploadClick}
+            todayLabel={todayLabel}
+            todayPulse={todayPulse}
+            typeMenuChildren={typeMenu}
+            tripList={tripList}
+            activeSlug={activeSlug}
+            onSwitchTrip={onSwitchTrip}
+          />
+        )}
         <Map
           trip={trip}
           viewMode={viewMode}
@@ -394,20 +398,24 @@ export default function TripView({
         open={panelOpen}
         onClose={closePanel}
       />
-      <TimelinePanel
-        trip={trip}
-        open={timelineOpen}
-        activeIdx={activeIdx}
-        onClose={closeTimeline}
-        onDayClick={onTimelineDayClick}
-      />
+      {!isPhone && (
+        <TimelinePanel
+          trip={trip}
+          open={timelineOpen}
+          activeIdx={activeIdx}
+          onClose={closeTimeline}
+          onDayClick={onTimelineDayClick}
+        />
+      )}
       <PrintView trip={trip} />
-      <UploadDialog
-        open={uploadOpen}
-        slug={slug}
-        onClose={() => setUploadOpen(false)}
-        onUpdated={() => router.refresh()}
-      />
+      {!isPhone && (
+        <UploadDialog
+          open={uploadOpen}
+          slug={slug}
+          onClose={() => setUploadOpen(false)}
+          onUpdated={() => router.refresh()}
+        />
+      )}
     </div>
   );
 }
