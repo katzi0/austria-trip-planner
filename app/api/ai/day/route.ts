@@ -13,6 +13,7 @@ export const runtime = "nodejs";
 // The current day, sent so the model MODIFIES it rather than inventing from scratch.
 const CurrentDaySchema = z.object({
   title: z.string().optional(),
+  desc: z.string().optional(),
   intensity: z.number().optional(),
   drive: z.string().optional(),
   food: z.string().optional(),
@@ -44,6 +45,7 @@ const ActDraft = z
 // What we ask the model for (text only; no coords, no minutes).
 const DraftSchema = z.object({
   title: z.string().optional(),
+  desc: z.string().optional(),
   intensity: z.number().int().min(1).max(5).optional(),
   drive: z.string().optional(),
   food: z.string().optional(),
@@ -93,7 +95,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         "אם הוספת פעילות חדשה, ספק לה גם name וגם q. " +
         (mode === "acts"
           ? "החזר רק את השדה acts (כל רשימת הפעילויות המעודכנת)."
-          : "החזר title, intensity (1-5), drive, food, tips, rain, acts.");
+          : "החזר title, desc (תיאור קצר של היום), intensity (1-5), drive, food, tips, rain, acts.");
   const ctx = regionName ? `האזור/בסיס: ${regionName}.\n` : "";
   const current = day
     ? `היום הנוכחי (לעריכה):\n${JSON.stringify(
@@ -187,6 +189,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
   return NextResponse.json({
     title: draft.title,
+    desc: draft.desc,
     intensity: draft.intensity,
     drive: draft.drive,
     food: draft.food,

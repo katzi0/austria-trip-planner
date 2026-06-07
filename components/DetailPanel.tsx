@@ -104,6 +104,17 @@ export default function DetailPanel({
   function deleteAct(ai: number) {
     updateDraft((dd) => ({ ...dd, acts: dd.acts.filter((_, i) => i !== ai) }));
   }
+  // Reorder an activity. Order drives leg distances, so legMin is left stale until
+  // "חשב מחדש" is pressed (the hint covers it).
+  function moveAct(ai: number, dir: -1 | 1) {
+    updateDraft((dd) => {
+      const j = ai + dir;
+      if (j < 0 || j >= dd.acts.length) return dd;
+      const acts = dd.acts.slice();
+      [acts[ai], acts[j]] = [acts[j], acts[ai]];
+      return { ...dd, acts };
+    });
+  }
 
   async function runAi(mode: "day" | "acts") {
     if (!d || !r || !draft || !prompt.trim()) return;
@@ -122,6 +133,7 @@ export default function DetailPanel({
           // Send the live draft so the model sees pending manual edits.
           day: {
             title: draft.title,
+            desc: draft.desc,
             intensity: draft.intensity,
             drive: draft.drive,
             food: draft.food,
@@ -143,6 +155,7 @@ export default function DetailPanel({
         const next = { ...cur };
         if (mode === "day") {
           if (data.title != null) next.title = data.title;
+          if (data.desc != null) next.desc = data.desc;
           if (data.intensity != null) next.intensity = data.intensity;
           if (data.drive != null) next.drive = data.drive;
           if (data.food != null) next.food = data.food;
@@ -390,6 +403,27 @@ export default function DetailPanel({
             </div>
           )}
 
+          {editing ? (
+            <section className="pnl-sec">
+              <h4>תיאור</h4>
+              <label className="edit-field">
+                <textarea
+                  value={view.desc ?? ""}
+                  rows={3}
+                  placeholder="תיאור חופשי של היום"
+                  onChange={(e) => updateDraft((x) => ({ ...x, desc: e.target.value || undefined }))}
+                />
+              </label>
+            </section>
+          ) : (
+            view.desc && (
+              <section className="pnl-sec">
+                <h4>תיאור</h4>
+                <p>{view.desc}</p>
+              </section>
+            )
+          )}
+
           <section className="pnl-sec pnl-agenda">
             <h4>תוכנית היום</h4>
             {editing ? (
@@ -405,14 +439,34 @@ export default function DetailPanel({
                           onChange={(e) => updateAct(i, (x) => ({ ...x, name: e.target.value }))}
                         />
                       </label>
-                      {typeof a.legMin === "number" && (
-                        <span className="pnl-step-pin" title="זמן נסיעה מהעצירה הקודמת">
-                          <Icon name="car" size={11} /> {a.legMin} דק׳
-                        </span>
-                      )}
-                      <button className="edit-btn danger" onClick={() => deleteAct(i)}>
-                        מחק
-                      </button>
+                      <div className="pnl-edit-act-ctrls">
+                        {typeof a.legMin === "number" && (
+                          <span className="pnl-step-pin" title="זמן נסיעה מהעצירה הקודמת">
+                            <Icon name="car" size={11} /> {a.legMin} דק׳
+                          </span>
+                        )}
+                        <button
+                          className="edit-btn secondary"
+                          onClick={() => moveAct(i, -1)}
+                          disabled={i === 0}
+                          aria-label="הזז למעלה"
+                          title="הזז למעלה"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          className="edit-btn secondary"
+                          onClick={() => moveAct(i, 1)}
+                          disabled={i === view.acts.length - 1}
+                          aria-label="הזז למטה"
+                          title="הזז למטה"
+                        >
+                          ↓
+                        </button>
+                        <button className="edit-btn danger" onClick={() => deleteAct(i)}>
+                          מחק
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
