@@ -19,6 +19,11 @@ const CurrentDaySchema = z.object({
   food: z.string().optional(),
   tips: z.string().optional(),
   rain: z.string().optional(),
+  cardClass: z.string().optional(),
+  cardLabel: z.string().optional(),
+  overnight: z.string().optional(),
+  icon: z.string().optional(),
+  star: z.boolean().optional(),
   acts: z
     .array(z.object({ name: z.string(), lat: z.number().optional(), lng: z.number().optional() }))
     .optional(),
@@ -51,6 +56,12 @@ const DraftSchema = z.object({
   food: z.string().optional(),
   tips: z.string().optional(),
   rain: z.string().optional(),
+  // Loose strings (not enums) so one bad value can't fail the whole parse; client clamps.
+  cardClass: z.string().optional(),
+  cardLabel: z.string().optional(),
+  overnight: z.string().optional(),
+  icon: z.string().optional(),
+  star: z.boolean().optional(),
   acts: z.array(ActDraft),
 });
 
@@ -95,7 +106,12 @@ export async function POST(req: Request): Promise<NextResponse> {
         "אם הוספת פעילות חדשה, ספק לה גם name וגם q. " +
         (mode === "acts"
           ? "החזר רק את השדה acts (כל רשימת הפעילויות המעודכנת)."
-          : "החזר title, desc (תיאור קצר של היום), intensity (1-5), drive, food, tips, rain, acts.");
+          : "החל את הבקשה במלואה והחזר את היום המעודכן המלא — כל השדות, כולל אלו שלא השתנו (העתק אותם כפי שהם). " +
+            "השדות: title, desc (תיאור קצר של היום), intensity (1-5), drive, " +
+            "cardClass (אחד מ: free/discount/none/na), cardLabel, food, tips, rain, " +
+            "overnight (טקסט או ריק), " +
+            "icon (אחד מ: ferris, cablecar, coaster, gem, castle, palace, spa, peak, kart, lake, museum, zoo, church, plane, bed), " +
+            "star (true/false), acts.");
   const ctx = regionName ? `האזור/בסיס: ${regionName}.\n` : "";
   const current = day
     ? `היום הנוכחי (לעריכה):\n${JSON.stringify(
@@ -115,7 +131,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.7,
+        temperature: 0.4,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: sys },
@@ -192,9 +208,14 @@ export async function POST(req: Request): Promise<NextResponse> {
     desc: draft.desc,
     intensity: draft.intensity,
     drive: draft.drive,
+    cardClass: draft.cardClass,
+    cardLabel: draft.cardLabel,
     food: draft.food,
     tips: draft.tips,
     rain: draft.rain,
+    overnight: draft.overnight,
+    icon: draft.icon,
+    star: draft.star,
     acts,
   });
 }
