@@ -136,9 +136,14 @@ export default function DetailPanel({
             desc: draft.desc,
             intensity: draft.intensity,
             drive: draft.drive,
+            cardClass: draft.cardClass,
+            cardLabel: draft.cardLabel,
             food: draft.food,
             tips: draft.tips,
             rain: draft.rain,
+            overnight: draft.overnight,
+            icon: draft.icon,
+            star: draft.star,
             acts: draft.acts.map((a) => ({ name: a.name, lat: a.lat, lng: a.lng })),
           },
         }),
@@ -158,9 +163,17 @@ export default function DetailPanel({
           if (data.desc != null) next.desc = data.desc;
           if (data.intensity != null) next.intensity = data.intensity;
           if (data.drive != null) next.drive = data.drive;
+          if (data.cardLabel != null) next.cardLabel = data.cardLabel;
           if (data.food != null) next.food = data.food;
           if (data.tips != null) next.tips = data.tips;
           if (data.rain != null) next.rain = data.rain;
+          if (data.overnight != null) next.overnight = data.overnight;
+          if (data.star != null) next.star = data.star;
+          // Clamp model-provided enum/icon values to known options.
+          if (data.cardClass && CARD_CLASS_OPTIONS.includes(data.cardClass as Day["cardClass"])) {
+            next.cardClass = data.cardClass as Day["cardClass"];
+          }
+          if (data.icon && ICON_OPTIONS.includes(data.icon)) next.icon = data.icon;
         }
         if (Array.isArray(data.acts)) next.acts = data.acts;
         return next;
