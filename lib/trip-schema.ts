@@ -44,6 +44,7 @@ export const DaySchema = z.object({
   lat: z.number(),
   lng: z.number(),
   title: z.string(),
+  desc: z.string().optional(),   // free-text day description shown in the detail panel
   acts: z.array(ActItem),
   drive: z.string(),
   cardLabel: z.string(),
