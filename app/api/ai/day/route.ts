@@ -25,8 +25,8 @@ const CurrentDaySchema = z.object({
 
 const ReqSchema = z.object({
   passphrase: z.string().optional(),
-  mode: z.enum(["day", "acts"]),
-  prompt: z.string().min(1),
+  mode: z.enum(["day", "acts", "geo"]),
+  prompt: z.string().optional(),
   regionName: z.string().optional(),
   // Region center — biases geocoding and is the route start when the day has no pin yet.
   near: z.object({ lat: z.number(), lng: z.number() }).optional(),
@@ -61,6 +61,8 @@ export async function POST(req: Request): Promise<NextResponse> {
   const parsed = ReqSchema.safeParse(body);
   if (!parsed.success) return err("bad request", 400);
   const { passphrase, mode, prompt, regionName, near, day } = parsed.data;
+  // "geo" needs no prompt (it only re-derives coords/distances); the others do.
+  if (mode !== "geo" && !prompt?.trim()) return err("bad request", 400);
 
   // Same gate as PATCH /api/trip.
   const expected = process.env.EDIT_PASSPHRASE;
@@ -76,17 +78,22 @@ export async function POST(req: Request): Promise<NextResponse> {
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
   const sys =
-    "אתה עוזר לערוך תוכנית של יום בטיול משפחתי באוסטריה (קיץ 2026), עם ילדים. " +
-    "המטרה: לְשַׁנּוֹת את היום הקיים לפי הבקשה — שמור על מה שלא התבקש לשינוי. " +
-    "החזר JSON בלבד התואם למבנה המבוקש, בעברית. " +
-    "acts = רשימת פעילויות בסדר ביצוע ביום. כל פריט הוא אובייקט עם שני שדות: " +
-    "name = השם בעברית להצגה (קצר וברור), " +
-    "q = שם המקום לחיפוש במפה באנגלית או גרמנית (השם הרשמי/המקומי, למשל " +
-    "'Zeller See', 'Kitzsteinhorn Kaprun'). q חיוני כדי למצוא קואורדינטות. " +
-    "אם הוספת פעילות חדשה, ספק לה גם name וגם q. " +
-    (mode === "acts"
-      ? "החזר רק את השדה acts (כל רשימת הפעילויות המעודכנת)."
-      : "החזר title, intensity (1-5), drive, food, tips, rain, acts.");
+    mode === "geo"
+      ? "אתה עוזר גאוקודינג לטיול באוסטריה. אל תשנה את התוכנית. " +
+        "החזר JSON בלבד עם השדה acts בלבד: בדיוק אותן פעילויות, אותם שמות בעברית, אותו סדר. " +
+        "לכל פריט החזר name (כפי שהוא, ללא שינוי) ו-q = שם המקום לחיפוש במפה באנגלית/גרמנית " +
+        "(השם הרשמי/המקומי, למשל 'Zeller See', 'Kitzsteinhorn Kaprun'). אל תוסיף, אל תסיר ואל תשנה שמות."
+      : "אתה עוזר לערוך תוכנית של יום בטיול משפחתי באוסטריה (קיץ 2026), עם ילדים. " +
+        "המטרה: לְשַׁנּוֹת את היום הקיים לפי הבקשה — שמור על מה שלא התבקש לשינוי. " +
+        "החזר JSON בלבד התואם למבנה המבוקש, בעברית. " +
+        "acts = רשימת פעילויות בסדר ביצוע ביום. כל פריט הוא אובייקט עם שני שדות: " +
+        "name = השם בעברית להצגה (קצר וברור), " +
+        "q = שם המקום לחיפוש במפה באנגלית או גרמנית (השם הרשמי/המקומי, למשל " +
+        "'Zeller See', 'Kitzsteinhorn Kaprun'). q חיוני כדי למצוא קואורדינטות. " +
+        "אם הוספת פעילות חדשה, ספק לה גם name וגם q. " +
+        (mode === "acts"
+          ? "החזר רק את השדה acts (כל רשימת הפעילויות המעודכנת)."
+          : "החזר title, intensity (1-5), drive, food, tips, rain, acts.");
   const ctx = regionName ? `האזור/בסיס: ${regionName}.\n` : "";
   const current = day
     ? `היום הנוכחי (לעריכה):\n${JSON.stringify(
@@ -110,7 +117,10 @@ export async function POST(req: Request): Promise<NextResponse> {
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: sys },
-          { role: "user", content: `${ctx}${current}בקשת השינוי: ${prompt}` },
+          {
+            role: "user",
+            content: mode === "geo" ? `${ctx}${current}` : `${ctx}${current}בקשת השינוי: ${prompt}`,
+          },
         ],
       }),
     });
@@ -172,7 +182,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     });
   }
 
-  if (mode === "acts") {
+  if (mode === "acts" || mode === "geo") {
     return NextResponse.json({ acts });
   }
   return NextResponse.json({
